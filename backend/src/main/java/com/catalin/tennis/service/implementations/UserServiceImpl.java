@@ -2,6 +2,7 @@ package com.catalin.tennis.service.implementations;
 
 import com.catalin.tennis.dto.request.RegisterUserDTO;
 import com.catalin.tennis.dto.response.UserResponseDTO;
+import com.catalin.tennis.exception.UserNotFoundException;
 import com.catalin.tennis.factory.UserFactory;
 import com.catalin.tennis.model.User;
 import com.catalin.tennis.model.enums.UserRoles;
@@ -47,10 +48,10 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserResponseDTO getUserByUsername(String username) {
         if(!userRepository.existsUserByUsername(username)){
-            throw new IllegalArgumentException("No user with such username exists");
+            throw new UserNotFoundException("No user with the " + username + " username exists.");
         }
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new IllegalArgumentException("No user with such username exists"));
+                .orElseThrow(() -> new UserNotFoundException("No user with the " + username + " username exists."));
         return new UserResponseDTO(user.getUsername(),user.getName(),user.getRole());
     }
 
@@ -58,7 +59,7 @@ public class UserServiceImpl implements UserService {
     public List<UserResponseDTO> getUsersByRole(UserRoles role) {
         List<User> userList = userRepository.findAllByRole(role);
         if(userList.isEmpty()){
-            throw new IllegalArgumentException("No users with that role");
+            throw new UserNotFoundException("No users with the role: " + role.toString() + ".");
         }
         List<UserResponseDTO> userResponseDTOS=new ArrayList<>();
         for(User u:userList){
