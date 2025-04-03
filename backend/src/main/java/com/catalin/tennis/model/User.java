@@ -12,7 +12,6 @@ import java.time.LocalDateTime;
 @Table(name="users")
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -34,4 +33,52 @@ public class User {
 
     @Column(name="created_at",nullable = false, updatable = false)
     private LocalDateTime createdAt;
+
+
+    public static UserBuilder builder() {
+        return new UserBuilder();
+    }
+
+    public static class UserBuilder {
+        private String username;
+        private String passwordHash;
+        private UserRoles role;
+        private String name;
+        private LocalDateTime createdAt;
+
+        public UserBuilder username(String username) {
+            this.username = username;
+            return this;
+        }
+
+        public UserBuilder passwordHash(String passwordHash) {
+            this.passwordHash = passwordHash;
+            return this;
+        }
+
+        public UserBuilder role(UserRoles role) {
+            this.role = role;
+            return this;
+        }
+
+        public UserBuilder name(String name) {
+            this.name = name;
+            return this;
+        }
+
+        public UserBuilder createdAt(LocalDateTime createdAt) {
+            this.createdAt = createdAt;
+            return this;
+        }
+
+        public User build() {
+            User user = new User();
+            user.setUsername(this.username);
+            user.setPasswordHash(this.passwordHash);
+            user.setRole(this.role);
+            user.setName(this.name);
+            user.setCreatedAt(this.createdAt);
+            return user;
+        }
+    }
 }
