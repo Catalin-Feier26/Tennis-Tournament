@@ -13,12 +13,12 @@ import java.time.LocalDateTime;
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name="registations")
+@Table(name="registrations")
 public class Registration {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name="registation_id")
+    @Column(name="registration_id")
     private Long id;
 
     @ManyToOne
@@ -29,6 +29,6 @@ public class Registration {
     @JoinColumn(name="tournament_id",nullable = false)
     private Tournament tournament;
 
-    @Column(name="registation_date",nullable = false)
+    @Column(name="registration_date",nullable = false)
     private LocalDateTime registrationDate;
 }
