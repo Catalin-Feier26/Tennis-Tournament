@@ -1,6 +1,7 @@
 package com.catalin.tennis.service;
 
 
+import com.catalin.tennis.dto.request.LoginDTO;
 import com.catalin.tennis.dto.request.RegisterUserDTO;
 import com.catalin.tennis.dto.response.UserResponseDTO;
 import com.catalin.tennis.model.enums.UserRoles;
@@ -12,5 +13,6 @@ public interface UserService {
     UserResponseDTO getUserByUsername(String username);
     List<UserResponseDTO> getUsersByRole(UserRoles role);
     List<UserResponseDTO> getUsersByName(String name);
+    String login(LoginDTO loginDTO);
 
 }

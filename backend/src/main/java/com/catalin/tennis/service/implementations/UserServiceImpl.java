@@ -1,5 +1,6 @@
 package com.catalin.tennis.service.implementations;
 
+import com.catalin.tennis.dto.request.LoginDTO;
 import com.catalin.tennis.dto.request.RegisterUserDTO;
 import com.catalin.tennis.dto.response.UserResponseDTO;
 import com.catalin.tennis.exception.UserNotFoundException;
@@ -7,6 +8,7 @@ import com.catalin.tennis.factory.UserFactory;
 import com.catalin.tennis.model.User;
 import com.catalin.tennis.model.enums.UserRoles;
 import com.catalin.tennis.repository.UserRepository;
+import com.catalin.tennis.security.JwtUtil;
 import com.catalin.tennis.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -20,11 +22,13 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder passwordEncoder;
+    private final JwtUtil jwtUtil;
 
     @Autowired
-    public UserServiceImpl(UserRepository userRepository){
+    public UserServiceImpl(UserRepository userRepository, JwtUtil jwtUtil){
         this.userRepository=userRepository;
         this.passwordEncoder=new BCryptPasswordEncoder();
+        this.jwtUtil=jwtUtil;
     }
 
     @Override
@@ -43,6 +47,18 @@ public class UserServiceImpl implements UserService {
         );
         userRepository.save(user);
         return new UserResponseDTO(user.getUsername(),user.getName(),user.getRole());
+    }
+    @Override
+    public String login(LoginDTO loginDTO) {
+        User user = userRepository.findByUsername(loginDTO.getUsername())
+                .orElseThrow(() -> new UserNotFoundException("User not found with username: " + loginDTO.getUsername()));
+
+        if (!passwordEncoder.matches(loginDTO.getPassword(), user.getPasswordHash())) {
+            throw new IllegalArgumentException("Invalid password");
+        }
+
+        String token = jwtUtil.generateToken(user);
+        return token;
     }
 
     @Override
