@@ -16,4 +16,5 @@ public interface UserRepository extends JpaRepository<User,Long>{
     List<User> findAllByCreatedAt(LocalDateTime createdAt);
     List<User> findAllByRole(UserRoles role);
     boolean existsUserByUsername(String username);
+
 }
