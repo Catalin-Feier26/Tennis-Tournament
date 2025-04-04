@@ -8,6 +8,7 @@ import com.catalin.tennis.factory.TournamentFactory;
 import com.catalin.tennis.model.Tournament;
 import com.catalin.tennis.repository.TournamentRepository;
 import com.catalin.tennis.service.TournamentService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -18,6 +19,7 @@ import java.util.List;
 public class TournamentServiceImpl implements TournamentService {
     private final TournamentRepository tournamentRepository;
 
+    @Autowired
     public TournamentServiceImpl(TournamentRepository tournamentRepository){
         this.tournamentRepository=tournamentRepository;
     }
