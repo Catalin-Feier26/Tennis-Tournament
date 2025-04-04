@@ -10,5 +10,6 @@ public interface TournamentService {
     List<TournamentResponseDTO> getAllTournaments();
     TournamentResponseDTO getTournamentByName(String name);
     List<TournamentResponseDTO> getTournamentsStartingAfter(String date);
+    void deleteTournament(Long tournamentId);
 
 }

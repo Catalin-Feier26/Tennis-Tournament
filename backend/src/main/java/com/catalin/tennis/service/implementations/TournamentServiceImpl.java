@@ -40,6 +40,14 @@ public class TournamentServiceImpl implements TournamentService {
     }
 
     @Override
+    public void deleteTournament(Long tournamentId) {
+        Tournament tournament = tournamentRepository.findById(tournamentId).orElseThrow(
+                ()-> new TournamentNotFoundException("Tournament not found")
+        );
+        tournamentRepository.delete(tournament);
+    }
+
+    @Override
     public List<TournamentResponseDTO> getAllTournaments() {
         List<Tournament> tournamentList = tournamentRepository.findAll();
         if(tournamentList.isEmpty()){
