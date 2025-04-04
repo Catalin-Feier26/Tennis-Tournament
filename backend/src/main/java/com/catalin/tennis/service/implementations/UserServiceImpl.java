@@ -2,6 +2,7 @@ package com.catalin.tennis.service.implementations;
 
 import com.catalin.tennis.dto.request.LoginDTO;
 import com.catalin.tennis.dto.request.RegisterUserDTO;
+import com.catalin.tennis.dto.request.UpdateUserDTO;
 import com.catalin.tennis.dto.response.UserResponseDTO;
 import com.catalin.tennis.exception.UserNotFoundException;
 import com.catalin.tennis.factory.UserFactory;
@@ -29,6 +30,44 @@ public class UserServiceImpl implements UserService {
         this.userRepository=userRepository;
         this.passwordEncoder=new BCryptPasswordEncoder();
         this.jwtUtil=jwtUtil;
+    }
+    @Override
+    public List<UserResponseDTO> getAllUsers(){
+        List<User> users = userRepository.findAll();
+        List<UserResponseDTO> dtos=new ArrayList<>();
+        for(User u:users){
+            dtos.add(
+                    new UserResponseDTO(
+                            u.getUsername(),
+                            u.getName(),
+                            u.getRole()
+                    )
+            );
+        }
+        return dtos;
+    }
+
+    @Override
+    public UserResponseDTO updateUser(String username, UpdateUserDTO dto){
+        User user=userRepository.findByUsername(username).orElseThrow(
+                () -> new UserNotFoundException("User not found with the username: " + username)
+        );
+        user.setName(dto.getName());
+
+        if(dto.getPassword() != null && !dto.getPassword().isEmpty()){
+            String encodedPassword = passwordEncoder.encode(dto.getPassword());
+            user.setPasswordHash(encodedPassword);
+        }
+        userRepository.save(user);
+        return new UserResponseDTO(user.getUsername(),user.getName(),user.getRole());
+    }
+
+    @Override
+    public void deleteUser(String username){
+        User user = userRepository.findByUsername(username).orElseThrow(
+                () -> new UserNotFoundException("User not found.")
+        );
+        userRepository.delete(user);
     }
 
     @Override
