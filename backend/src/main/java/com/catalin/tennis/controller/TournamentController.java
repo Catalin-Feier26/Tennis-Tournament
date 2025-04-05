@@ -36,7 +36,7 @@ public class TournamentController {
         return ResponseEntity.ok(tournaments);
     }
 
-    @DeleteMapping("{/id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteTournament(@PathVariable Long id){
         tournamentService.deleteTournament(id);
         return ResponseEntity.ok("Tournament deleted successfully");
