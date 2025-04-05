@@ -1,0 +1,106 @@
+.referee-container {
+    padding: 2rem;
+}
+
+.schedule-container {
+    margin-top: 2rem;
+}
+
+.match-card {
+    background: white;
+    border-radius: 10px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+}
+
+.match-card h3 {
+    color: #1e3c72;
+    margin-bottom: 1rem;
+}
+
+.match-info {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.score-button {
+    padding: 0.5rem 1rem;
+    background: #1e3c72;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    margin-top: 1rem;
+}
+
+.score-button:hover:not(:disabled) {
+    background: #2a5298;
+}
+
+.score-button:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+}
+
+/* Score Update Form */
+.score-form {
+    background: white;
+    border-radius: 10px;
+    padding: 2rem;
+    margin-top: 2rem;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #333;
+    font-weight: 500;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 1rem;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: #1e3c72;
+}
+
+.submit-button {
+    width: 100%;
+    padding: 0.75rem;
+    background: #1e3c72;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    margin-top: 1rem;
+}
+
+.submit-button:hover {
+    background: #2a5298;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .match-info {
+        grid-template-columns: 1fr;
+    }
+
+    .score-form {
+        padding: 1rem;
+    }
+} 

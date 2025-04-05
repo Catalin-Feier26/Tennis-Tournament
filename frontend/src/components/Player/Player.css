@@ -1,0 +1,113 @@
+.player-container {
+    padding: 2rem;
+}
+
+.tournaments-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+.tournament-card {
+    background: white;
+    border-radius: 10px;
+    padding: 1.5rem;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s;
+}
+
+.tournament-card:hover {
+    transform: translateY(-5px);
+}
+
+.tournament-card h3 {
+    color: #1e3c72;
+    margin-bottom: 1rem;
+}
+
+.tournament-card p {
+    margin: 0.5rem 0;
+    color: #666;
+}
+
+.register-button {
+    width: 100%;
+    padding: 0.75rem;
+    margin-top: 1rem;
+    background: #1e3c72;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.register-button:hover:not(:disabled) {
+    background: #2a5298;
+}
+
+.register-button:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+}
+
+/* Schedule Styles */
+.schedule-container {
+    margin-top: 2rem;
+}
+
+.match-card {
+    background: white;
+    border-radius: 10px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+}
+
+.match-card h3 {
+    color: #1e3c72;
+    margin-bottom: 1rem;
+}
+
+.match-info {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+/* Scores Styles */
+.scores-container {
+    margin-top: 2rem;
+}
+
+.score-card {
+    background: white;
+    border-radius: 10px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+}
+
+.score-card h3 {
+    color: #1e3c72;
+    margin-bottom: 1rem;
+}
+
+.score-details {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .tournaments-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .match-info,
+    .score-details {
+        grid-template-columns: 1fr;
+    }
+} 
