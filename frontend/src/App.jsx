@@ -1,96 +1,158 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import Navbar from './components/Navigation/Navbar';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { isAuthenticated, hasRole, ROLES } from './utils/auth';
+
+// Auth components
 import Login from './components/Auth/Login';
 import Register from './components/Auth/Register';
+import Home from './components/Home/Home';
+
+// Shared components
+import Navbar from './components/Shared/Navbar';
+
+// Profile component
+import EditProfile from './components/Profile/EditProfile';
+
+// Player components
+import PlayerDashboard from './components/Player/PlayerDashboard';
 import TournamentRegistration from './components/Player/TournamentRegistration';
 import PlayerSchedule from './components/Player/PlayerSchedule';
 import PlayerScores from './components/Player/PlayerScores';
+
+// Referee components
+import RefereeDashboard from './components/Referee/RefereeDashboard';
 import RefereeSchedule from './components/Referee/RefereeSchedule';
 import UpdateScore from './components/Referee/UpdateScore';
+
+// Admin components
+import AdminDashboard from './components/Admin/AdminDashboard';
 import UserManagement from './components/Admin/UserManagement';
 import MatchManagement from './components/Admin/MatchManagement';
-import './App.css';
 
 // Protected Route component
 const ProtectedRoute = ({ children, allowedRoles }) => {
-    const role = localStorage.getItem('role');
-    const token = localStorage.getItem('token');
-
-    if (!token) {
+    if (!isAuthenticated()) {
         return <Navigate to="/login" />;
     }
-
-    if (allowedRoles && !allowedRoles.includes(role)) {
+    if (allowedRoles && !allowedRoles.some(role => hasRole(role))) {
         return <Navigate to="/" />;
     }
-
-    return children;
+    return (
+        <>
+            <Navbar />
+            {children}
+        </>
+    );
 };
 
-function App() {
+const App = () => {
     return (
-        <Router>
-            <div className="app">
-                <Navbar />
-                <main className="main-content">
-                    <Routes>
-                        <Route path="/login" element={<Login />} />
-                        <Route path="/register" element={<Register />} />
-                        
-                        {/* Admin Routes */}
-                        <Route path="/admin/users" element={
-                            <ProtectedRoute allowedRoles={['ADMIN']}>
-                                <UserManagement />
-                            </ProtectedRoute>
-                        } />
-                        <Route path="/admin/matches" element={
-                            <ProtectedRoute allowedRoles={['ADMIN']}>
-                                <MatchManagement />
-                            </ProtectedRoute>
-                        } />
+        <Routes>
+            {/* Public routes */}
+            <Route path="/" element={<Home />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
 
-                        {/* Player Routes */}
-                        <Route path="/player/tournaments" element={
-                            <ProtectedRoute allowedRoles={['PLAYER']}>
-                                <TournamentRegistration />
-                            </ProtectedRoute>
-                        } />
-                        <Route path="/player/schedule" element={
-                            <ProtectedRoute allowedRoles={['PLAYER']}>
-                                <PlayerSchedule />
-                            </ProtectedRoute>
-                        } />
-                        <Route path="/player/scores" element={
-                            <ProtectedRoute allowedRoles={['PLAYER']}>
-                                <PlayerScores />
-                            </ProtectedRoute>
-                        } />
+            {/* Profile route */}
+            <Route
+                path="/profile"
+                element={
+                    <ProtectedRoute>
+                        <EditProfile />
+                    </ProtectedRoute>
+                }
+            />
 
-                        {/* Referee Routes */}
-                        <Route path="/referee/schedule" element={
-                            <ProtectedRoute allowedRoles={['REFEREE']}>
-                                <RefereeSchedule />
-                            </ProtectedRoute>
-                        } />
-                        <Route path="/referee/scores/:matchId" element={
-                            <ProtectedRoute allowedRoles={['REFEREE']}>
-                                <UpdateScore />
-                            </ProtectedRoute>
-                        } />
+            {/* Player routes */}
+            <Route
+                path="/player/dashboard"
+                element={
+                    <ProtectedRoute allowedRoles={[ROLES.TENNIS_PLAYER]}>
+                        <PlayerDashboard />
+                    </ProtectedRoute>
+                }
+            />
+            <Route
+                path="/player/tournaments"
+                element={
+                    <ProtectedRoute allowedRoles={[ROLES.TENNIS_PLAYER]}>
+                        <TournamentRegistration />
+                    </ProtectedRoute>
+                }
+            />
+            <Route
+                path="/player/schedule"
+                element={
+                    <ProtectedRoute allowedRoles={[ROLES.TENNIS_PLAYER]}>
+                        <PlayerSchedule />
+                    </ProtectedRoute>
+                }
+            />
+            <Route
+                path="/player/scores"
+                element={
+                    <ProtectedRoute allowedRoles={[ROLES.TENNIS_PLAYER]}>
+                        <PlayerScores />
+                    </ProtectedRoute>
+                }
+            />
 
-                        {/* Default Route */}
-                        <Route path="/" element={
-                            <div className="home-container">
-                                <h1>Welcome to Tennis Tournament</h1>
-                                <p>Please login or register to access the tournament features.</p>
-                            </div>
-                        } />
-                    </Routes>
-                </main>
-            </div>
-        </Router>
+            {/* Referee routes */}
+            <Route
+                path="/referee/dashboard"
+                element={
+                    <ProtectedRoute allowedRoles={[ROLES.REFEREE]}>
+                        <RefereeDashboard />
+                    </ProtectedRoute>
+                }
+            />
+            <Route
+                path="/referee/schedule"
+                element={
+                    <ProtectedRoute allowedRoles={[ROLES.REFEREE]}>
+                        <RefereeSchedule />
+                    </ProtectedRoute>
+                }
+            />
+            <Route
+                path="/referee/matches"
+                element={
+                    <ProtectedRoute allowedRoles={[ROLES.REFEREE]}>
+                        <UpdateScore />
+                    </ProtectedRoute>
+                }
+            />
+
+            {/* Admin routes */}
+            <Route
+                path="/admin/dashboard"
+                element={
+                    <ProtectedRoute allowedRoles={[ROLES.ADMINISTRATOR]}>
+                        <AdminDashboard />
+                    </ProtectedRoute>
+                }
+            />
+            <Route
+                path="/admin/users"
+                element={
+                    <ProtectedRoute allowedRoles={[ROLES.ADMINISTRATOR]}>
+                        <UserManagement />
+                    </ProtectedRoute>
+                }
+            />
+            <Route
+                path="/admin/matches"
+                element={
+                    <ProtectedRoute allowedRoles={[ROLES.ADMINISTRATOR]}>
+                        <MatchManagement />
+                    </ProtectedRoute>
+                }
+            />
+
+            {/* Catch all route */}
+            <Route path="*" element={<Navigate to="/" />} />
+        </Routes>
     );
-}
+};
 
 export default App;

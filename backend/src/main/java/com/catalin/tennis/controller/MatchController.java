@@ -44,9 +44,9 @@ public class MatchController {
         return ResponseEntity.ok(matches);
     }
 
-    @GetMapping("/player/{playerId}")
-    public ResponseEntity<List<MatchResponseDTO>> getMatchesByPlayer(@PathVariable Long playerId) {
-        List<MatchResponseDTO> matches = matchService.getMatchesByPlayer(playerId);
+    @GetMapping("/player/{username}")
+    public ResponseEntity<List<MatchResponseDTO>> getMatchesByPlayer(@PathVariable String username) {
+        List<MatchResponseDTO> matches = matchService.getMatchesByPlayer(username);
         return ResponseEntity.ok(matches);
     }
 }

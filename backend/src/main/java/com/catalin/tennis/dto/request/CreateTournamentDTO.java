@@ -23,4 +23,7 @@ public class CreateTournamentDTO {
     @NotNull(message = "End date is required")
     @FutureOrPresent(message = "End date cannot be in the past")
     private LocalDate endDate;
+
+    @NotNull(message = "Deadline is required")
+    private LocalDate registrationDeadline;
 }

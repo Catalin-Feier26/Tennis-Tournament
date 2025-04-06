@@ -6,11 +6,12 @@ import com.catalin.tennis.model.Tournament;
 import java.time.LocalDate;
 
 public class TournamentFactory {
-    public static Tournament createTournament(String name, LocalDate startDate, LocalDate endDate){
+    public static Tournament createTournament(String name, LocalDate startDate, LocalDate endDate, LocalDate registrationDeadline){
         return Tournament.builder()
                 .name(name)
                 .startDate(startDate)
                 .endDate(endDate)
+                .registrationDeadline(registrationDeadline)
                 .build();
     }
 }

@@ -32,10 +32,11 @@ public class TournamentServiceImpl implements TournamentService {
         Tournament tournament = TournamentFactory.createTournament(
                 dto.getName(),
                 dto.getStartDate(),
-                dto.getEndDate()
+                dto.getEndDate(),
+                dto.getRegistrationDeadline()
         );
         tournamentRepository.save(tournament);
-        return new TournamentResponseDTO(tournament.getName(),tournament.getStartDate(),tournament.getEndDate());
+        return new TournamentResponseDTO(tournament.getName(),tournament.getStartDate(),tournament.getEndDate(), tournament.getRegistrationDeadline());
 
     }
 
@@ -56,7 +57,7 @@ public class TournamentServiceImpl implements TournamentService {
         List<TournamentResponseDTO> dtos = new ArrayList<>();
         for(Tournament t: tournamentList){
             dtos.add(
-                    new TournamentResponseDTO(t.getName(),t.getStartDate(),t.getEndDate())
+                    new TournamentResponseDTO(t.getName(),t.getStartDate(),t.getEndDate(),t.getRegistrationDeadline())
             );
         }
         return dtos;
@@ -70,7 +71,7 @@ public class TournamentServiceImpl implements TournamentService {
         Tournament tournament=tournamentRepository.findByName(name).orElseThrow(
                 () -> new TournamentNotFoundException("No such tournament exists")
         );
-        return new TournamentResponseDTO(tournament.getName(),tournament.getStartDate(),tournament.getEndDate());
+        return new TournamentResponseDTO(tournament.getName(),tournament.getStartDate(),tournament.getEndDate(), tournament.getRegistrationDeadline());
     }
 
     @Override
@@ -87,7 +88,7 @@ public class TournamentServiceImpl implements TournamentService {
 
         List<TournamentResponseDTO> dtos = new ArrayList<>();
         for (Tournament t : tournamentList) {
-            dtos.add(new TournamentResponseDTO(t.getName(), t.getStartDate(), t.getEndDate()));
+            dtos.add(new TournamentResponseDTO(t.getName(), t.getStartDate(), t.getEndDate(), t.getRegistrationDeadline()));
         }
         return dtos;
     }

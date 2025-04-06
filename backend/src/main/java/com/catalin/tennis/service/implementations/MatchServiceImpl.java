@@ -96,38 +96,33 @@ public class MatchServiceImpl implements MatchService {
         );
     }
 
-
     @Override
     public List<MatchResponseDTO> getMatchesByTournament(Long tournamentId) {
-        List<Match> matches=matchRepository.findByTournament_Id(tournamentId);
-        if(matches.isEmpty()){
-            throw new MatchNotFoundException("No matches in this tournament");
+        List<Match> matches = matchRepository.findByTournament_Id(tournamentId);
+        if (matches.isEmpty()) {
+            return new ArrayList<>();
         }
-        List<MatchResponseDTO> matchResponseDTOS=matchListToMatchResponseList(matches);
-        return matchResponseDTOS;
+        return matchListToMatchResponseList(matches);
     }
 
     @Override
     public List<MatchResponseDTO> getMatchesByReferee(Long refereeId) {
-        List<Match> matches=matchRepository.findByReferee_Id(refereeId);
-        if(matches.isEmpty()){
-            throw new MatchNotFoundException("No matches are having this referee");
+        List<Match> matches = matchRepository.findByReferee_Id(refereeId);
+        if (matches.isEmpty()) {
+            return new ArrayList<>();
         }
-        List<MatchResponseDTO> matchResponseDTOS=matchListToMatchResponseList(matches);
-        return matchResponseDTOS;
+        return matchListToMatchResponseList(matches);
     }
 
     @Override
-    public List<MatchResponseDTO> getMatchesByPlayer(Long playerId) {
-        User player = userRepository.findById(playerId).orElseThrow(
-                () -> new UserNotFoundException("Player not found")
-        );
-        List<Match> matches=matchRepository.findByPlayer1OrPlayer2(player,player);
-        if(matches.isEmpty()){
-            throw new MatchNotFoundException("No matches for this player");
+    public List<MatchResponseDTO> getMatchesByPlayer(String username) {
+        User player = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UserNotFoundException("Player not found"));
+        List<Match> matches = matchRepository.findByPlayer1OrPlayer2(player, player);
+        if (matches.isEmpty()) {
+            return new ArrayList<>();
         }
-        List<MatchResponseDTO> dtos =matchListToMatchResponseList(matches);
-        return dtos;
+        return matchListToMatchResponseList(matches);
     }
 
     private List<MatchResponseDTO> matchListToMatchResponseList(List<Match> matches){

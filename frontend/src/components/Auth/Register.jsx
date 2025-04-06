@@ -1,52 +1,75 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { register } from '../../services/api';
+import { isValidUsername, isValidPassword, getValidationMessage } from '../../utils/auth';
 import './Auth.css';
 
 const Register = () => {
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
         username: '',
-        password: '',
         name: '',
-        role: 'PLAYER'
+        password: '',
+        confirmPassword: ''
     });
-    const [error, setError] = useState('');
+    const [errors, setErrors] = useState({});
     const [loading, setLoading] = useState(false);
+    const [apiError, setApiError] = useState('');
+
+    const validateForm = () => {
+        const newErrors = {};
+        if (!formData.username) {
+            newErrors.username = getValidationMessage('required');
+        } else if (!isValidUsername(formData.username)) {
+            newErrors.username = getValidationMessage('username');
+        }
+        if (!formData.name) {
+            newErrors.name = getValidationMessage('required');
+        }
+        if (!formData.password) {
+            newErrors.password = getValidationMessage('required');
+        } else if (!isValidPassword(formData.password)) {
+            newErrors.password = getValidationMessage('password');
+        }
+        if (!formData.confirmPassword) {
+            newErrors.confirmPassword = getValidationMessage('required');
+        } else if (formData.password !== formData.confirmPassword) {
+            newErrors.confirmPassword = 'Passwords do not match';
+        }
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
 
     const handleChange = (e) => {
-        setFormData({
-            ...formData,
-            [e.target.name]: e.target.value
-        });
+        const { name, value } = e.target;
+        setFormData(prev => ({
+            ...prev,
+            [name]: value
+        }));
+        if (errors[name]) {
+            setErrors(prev => ({
+                ...prev,
+                [name]: ''
+            }));
+        }
+        setApiError('');
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setError('');
+        if (!validateForm()) return;
         setLoading(true);
-
+        setApiError('');
         try {
-            const response = await fetch('http://localhost:9090/api/auth/register', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    username: formData.username,
-                    password: formData.password,
-                    name: formData.name,
-                    role: formData.role
-                }),
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || 'Registration failed');
-            }
-
-            navigate('/login');
-        } catch (err) {
-            setError(err.message);
+            const registrationData = {
+                username: formData.username,
+                password: formData.password,
+                name: formData.name
+            };
+            await register(registrationData);
+            navigate('/login', { state: { message: 'Registration successful! Please login.' } });
+        } catch (error) {
+            setApiError(error.message || 'Registration failed. Please try again.');
         } finally {
             setLoading(false);
         }
@@ -55,76 +78,75 @@ const Register = () => {
     return (
         <div className="auth-container">
             <div className="auth-card">
-                <div className="auth-header">
-                    <h2>Create an Account</h2>
-                    <p>Join our tennis tournament community</p>
-                </div>
-                {error && <div className="error-message">{error}</div>}
-                <form onSubmit={handleSubmit} className="auth-form">
+                <h2 className="auth-header">Create Account</h2>
+                <form className="auth-form" onSubmit={handleSubmit}>
                     <div className="form-group">
                         <label htmlFor="username">Username</label>
                         <input
+                            autoComplete="username"
                             type="text"
                             id="username"
                             name="username"
                             value={formData.username}
                             onChange={handleChange}
+                            className={errors.username ? 'error' : ''}
                             placeholder="Choose a username"
-                            required
                         />
+                        {errors.username && <span className="error-text">{errors.username}</span>}
                     </div>
                     <div className="form-group">
                         <label htmlFor="name">Full Name</label>
                         <input
+                            autoComplete="name"
                             type="text"
                             id="name"
                             name="name"
                             value={formData.name}
                             onChange={handleChange}
+                            className={errors.name ? 'error' : ''}
                             placeholder="Enter your full name"
-                            required
                         />
+                        {errors.name && <span className="error-text">{errors.name}</span>}
                     </div>
                     <div className="form-group">
                         <label htmlFor="password">Password</label>
                         <input
+                            autoComplete="new-password"
                             type="password"
                             id="password"
                             name="password"
                             value={formData.password}
                             onChange={handleChange}
-                            placeholder="Create a password"
-                            required
+                            className={errors.password ? 'error' : ''}
+                            placeholder="Choose a password"
                         />
+                        {errors.password && <span className="error-text">{errors.password}</span>}
                     </div>
                     <div className="form-group">
-                        <label htmlFor="role">Role</label>
-                        <select
-                            id="role"
-                            name="role"
-                            value={formData.role}
+                        <label htmlFor="confirmPassword">Confirm Password</label>
+                        <input
+                            autoComplete="new-password"
+                            type="password"
+                            id="confirmPassword"
+                            name="confirmPassword"
+                            value={formData.confirmPassword}
                             onChange={handleChange}
-                            className="role-select"
-                            required
-                        >
-                            <option value="PLAYER">Player</option>
-                            <option value="REFEREE">Referee</option>
-                        </select>
+                            className={errors.confirmPassword ? 'error' : ''}
+                            placeholder="Confirm your password"
+                        />
+                        {errors.confirmPassword && <span className="error-text">{errors.confirmPassword}</span>}
                     </div>
+                    {apiError && <div className="error-message">{apiError}</div>}
                     <button type="submit" className="auth-button" disabled={loading}>
-                        {loading ? (
-                            <span className="loading-spinner"></span>
-                        ) : (
-                            'Register'
-                        )}
+                        {loading ? 'Creating Account...' : 'Register'}
                     </button>
                 </form>
-                <div className="auth-footer">
-                    <p>Already have an account? <a href="/login">Login here</a></p>
-                </div>
+                <p className="auth-footer">
+                    Already have an account? <a href="/login">Login here</a>
+                </p>
             </div>
         </div>
     );
 };
 
-export default Register; 
+export default Register;

@@ -11,5 +11,7 @@ import lombok.NoArgsConstructor;
 public class UpdateUserDTO {
     @NotBlank(message = "Name is required")
     private String name;
-    private String password;
+    private String oldPassword;
+    private String newPassword;
+    private String role;
 }

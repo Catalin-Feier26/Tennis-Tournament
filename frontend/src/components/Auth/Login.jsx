@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { login } from '../../services/api';
+import { setUserData, isValidUsername, isValidPassword, getValidationMessage } from '../../utils/auth';
 import './Auth.css';
 
 const Login = () => {
@@ -8,58 +10,71 @@ const Login = () => {
         username: '',
         password: ''
     });
-    const [error, setError] = useState('');
+    const [errors, setErrors] = useState({});
     const [loading, setLoading] = useState(false);
+    const [apiError, setApiError] = useState('');
+
+    const validateForm = () => {
+        const newErrors = {};
+        if (!formData.username) {
+            newErrors.username = getValidationMessage('required');
+        } else if (!isValidUsername(formData.username)) {
+            newErrors.username = getValidationMessage('username');
+        }
+
+        if (!formData.password) {
+            newErrors.password = getValidationMessage('required');
+        } else if (!isValidPassword(formData.password)) {
+            newErrors.password = getValidationMessage('password');
+        }
+
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
 
     const handleChange = (e) => {
-        setFormData({
-            ...formData,
-            [e.target.name]: e.target.value
-        });
+        const { name, value } = e.target;
+        setFormData(prev => ({
+            ...prev,
+            [name]: value
+        }));
+        // Clear error when user starts typing
+        if (errors[name]) {
+            setErrors(prev => ({
+                ...prev,
+                [name]: ''
+            }));
+        }
+        setApiError('');
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setError('');
+        if (!validateForm()) return;
+
         setLoading(true);
+        setApiError('');
 
         try {
-            const response = await fetch('http://localhost:9090/api/auth/login', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(formData),
-            });
-
-            if (!response.ok) {
-                throw new Error('Invalid credentials');
-            }
-
-            const token = await response.text();
-            localStorage.setItem('token', token);
+            const response = await login(formData);
+            setUserData(response);
             
-            // Get user role from token
-            const tokenPayload = JSON.parse(atob(token.split('.')[1]));
-            localStorage.setItem('role', tokenPayload.role);
-            localStorage.setItem('username', tokenPayload.sub);
-
             // Redirect based on role
-            switch (tokenPayload.role) {
-                case 'ADMIN':
-                    navigate('/admin/users');
-                    break;
-                case 'PLAYER':
-                    navigate('/player/tournaments');
+            switch (response.role) {
+                case 'ADMINISTRATOR':
+                    navigate('/admin/dashboard');
                     break;
                 case 'REFEREE':
-                    navigate('/referee/schedule');
+                    navigate('/referee/dashboard');
+                    break;
+                case 'TENNIS_PLAYER':
+                    navigate('/player/dashboard');
                     break;
                 default:
                     navigate('/');
             }
-        } catch (err) {
-            setError(err.message);
+        } catch (error) {
+            setApiError(error.message || 'Login failed. Please try again.');
         } finally {
             setLoading(false);
         }
@@ -68,12 +83,8 @@ const Login = () => {
     return (
         <div className="auth-container">
             <div className="auth-card">
-                <div className="auth-header">
-                    <h2>Welcome to Tennis Tournament</h2>
-                    <p>Please login to continue</p>
-                </div>
-                {error && <div className="error-message">{error}</div>}
-                <form onSubmit={handleSubmit} className="auth-form">
+                <h2 className="auth-header">Welcome Back</h2>
+                <form className="auth-form" onSubmit={handleSubmit}>
                     <div className="form-group">
                         <label htmlFor="username">Username</label>
                         <input
@@ -82,10 +93,12 @@ const Login = () => {
                             name="username"
                             value={formData.username}
                             onChange={handleChange}
+                            className={errors.username ? 'error' : ''}
                             placeholder="Enter your username"
-                            required
                         />
+                        {errors.username && <span className="error-text">{errors.username}</span>}
                     </div>
+
                     <div className="form-group">
                         <label htmlFor="password">Password</label>
                         <input
@@ -94,21 +107,26 @@ const Login = () => {
                             name="password"
                             value={formData.password}
                             onChange={handleChange}
+                            className={errors.password ? 'error' : ''}
                             placeholder="Enter your password"
-                            required
                         />
+                        {errors.password && <span className="error-text">{errors.password}</span>}
                     </div>
-                    <button type="submit" className="auth-button" disabled={loading}>
-                        {loading ? (
-                            <span className="loading-spinner"></span>
-                        ) : (
-                            'Login'
-                        )}
+
+                    {apiError && <div className="error-message">{apiError}</div>}
+
+                    <button 
+                        type="submit" 
+                        className="auth-button"
+                        disabled={loading}
+                    >
+                        {loading ? 'Logging in...' : 'Login'}
                     </button>
                 </form>
-                <div className="auth-footer">
-                    <p>Don't have an account? <a href="/register">Register here</a></p>
-                </div>
+
+                <p className="auth-footer">
+                    Don't have an account? <a href="/register">Register here</a>
+                </p>
             </div>
         </div>
     );

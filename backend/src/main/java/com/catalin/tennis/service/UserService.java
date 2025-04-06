@@ -8,6 +8,7 @@ import com.catalin.tennis.dto.response.UserResponseDTO;
 import com.catalin.tennis.model.enums.UserRoles;
 
 import java.util.List;
+import java.util.Map;
 
 public interface UserService {
     UserResponseDTO register(RegisterUserDTO dto);
@@ -17,6 +18,6 @@ public interface UserService {
     List<UserResponseDTO> getUsersByRole(UserRoles role);
     List<UserResponseDTO> getUsersByName(String name);
     List<UserResponseDTO> getAllUsers();
-    String login(LoginDTO loginDTO);
+    Map<String,String> login(LoginDTO loginDTO);
 
 }

@@ -1,150 +1,182 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { getRefereeMatches, updateMatchScore } from '../../services/api';
+import { getCurrentUser } from '../../utils/auth';
 import './Referee.css';
 
 const UpdateScore = () => {
-    const { matchId } = useParams();
     const navigate = useNavigate();
+    const location = useLocation();
+    const { token, username } = getCurrentUser();
+    const queryParams = new URLSearchParams(location.search);
+    const matchId = queryParams.get('matchId');
+
     const [match, setMatch] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
-    const [formData, setFormData] = useState({
-        player1Score: '',
-        player2Score: '',
-        winner: ''
+    const [success, setSuccess] = useState('');
+    const [scores, setScores] = useState({
+        player1Sets: ['', '', ''],
+        player2Sets: ['', '', '']
     });
 
     useEffect(() => {
-        fetchMatchDetails();
+        fetchMatch();
     }, [matchId]);
 
-    const fetchMatchDetails = async () => {
+    const fetchMatch = async () => {
         try {
-            const response = await fetch(`http://localhost:9090/api/matches/${matchId}`, {
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                }
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to fetch match details');
+            const matches = await getRefereeMatches(username, token);
+            const selectedMatch = matches.find(m => m.id.toString() === matchId);
+            
+            if (!selectedMatch) {
+                throw new Error('Match not found');
             }
-
-            const data = await response.json();
-            setMatch(data);
-            setFormData({
-                player1Score: data.player1Score || '',
-                player2Score: data.player2Score || '',
-                winner: data.winner || ''
-            });
-        } catch (err) {
-            setError(err.message);
+            
+            setMatch(selectedMatch);
+        } catch (error) {
+            setError('Failed to load match details. Please try again later.');
         } finally {
             setLoading(false);
         }
     };
 
-    const handleChange = (e) => {
-        setFormData({
-            ...formData,
-            [e.target.name]: e.target.value
-        });
+    const handleScoreChange = (player, setIndex, value) => {
+        const numericValue = value === '' ? '' : parseInt(value, 10);
+        if (value === '' || (numericValue >= 0 && numericValue <= 7)) {
+            setScores(prev => ({
+                ...prev,
+                [`player${player}Sets`]: prev[`player${player}Sets`].map(
+                    (score, i) => i === setIndex ? value : score
+                )
+            }));
+        }
+    };
+
+    const validateScores = () => {
+        const sets = [];
+        for (let i = 0; i < 3; i++) {
+            const p1Score = parseInt(scores.player1Sets[i]);
+            const p2Score = parseInt(scores.player2Sets[i]);
+            
+            if (!isNaN(p1Score) && !isNaN(p2Score)) {
+                if (p1Score === p2Score) {
+                    return 'Scores cannot be equal in a set';
+                }
+                if (Math.max(p1Score, p2Score) < 6) {
+                    return 'Winning score must be at least 6';
+                }
+                if (Math.max(p1Score, p2Score) === 6 && Math.min(p1Score, p2Score) > 4) {
+                    return 'Invalid score combination';
+                }
+                if (Math.max(p1Score, p2Score) === 7 && Math.min(p1Score, p2Score) !== 5 && Math.min(p1Score, p2Score) !== 6) {
+                    return 'Invalid score combination';
+                }
+                sets.push({ player1Score: p1Score, player2Score: p2Score });
+            }
+        }
+        
+        if (sets.length === 0) {
+            return 'At least one set must be completed';
+        }
+        
+        return null;
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setError('');
+        setSuccess('');
+
+        const validationError = validateScores();
+        if (validationError) {
+            setError(validationError);
+            return;
+        }
+
         try {
-            const response = await fetch('http://localhost:9090/api/matches/score', {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                },
-                body: JSON.stringify({
-                    matchId: matchId,
-                    player1Score: formData.player1Score,
-                    player2Score: formData.player2Score,
-                    winner: formData.winner
-                })
-            });
+            const scoreData = {
+                sets: scores.player1Sets.map((_, index) => ({
+                    player1Score: parseInt(scores.player1Sets[index]),
+                    player2Score: parseInt(scores.player2Sets[index])
+                })).filter(set => !isNaN(set.player1Score) && !isNaN(set.player2Score))
+            };
 
-            if (!response.ok) {
-                throw new Error('Failed to update score');
-            }
-
-            navigate('/referee/schedule');
-        } catch (err) {
-            setError(err.message);
+            await updateMatchScore(matchId, scoreData, token);
+            setSuccess('Match score updated successfully');
+            setTimeout(() => {
+                navigate('/referee/dashboard');
+            }, 2000);
+        } catch (error) {
+            setError(error.message || 'Failed to update match score');
         }
     };
 
     if (loading) {
-        return <div className="loading">Loading match details...</div>;
+        return <div className="loading-container">Loading match details...</div>;
     }
 
     if (!match) {
-        return <div className="error-message">Match not found</div>;
+        return <div className="error-container">Match not found</div>;
     }
 
     return (
-        <div className="referee-container">
-            <h2>Update Match Score</h2>
-            {error && <div className="error-message">{error}</div>}
-
-            <div className="match-details">
-                <h3>Match Details</h3>
-                <p>Tournament: {match.tournamentName}</p>
-                <p>Player 1: {match.player1Name}</p>
-                <p>Player 2: {match.player2Name}</p>
-                <p>Date: {new Date(match.matchDate).toLocaleString()}</p>
-                <p>Court: {match.court}</p>
+        <div className="dashboard-container">
+            <div className="dashboard-header">
+                <h1 className="dashboard-title">Update Match Score</h1>
             </div>
 
-            <form onSubmit={handleSubmit} className="score-form">
-                <div className="form-group">
-                    <label htmlFor="player1Score">{match.player1Name} Score</label>
-                    <input
-                        type="number"
-                        id="player1Score"
-                        name="player1Score"
-                        value={formData.player1Score}
-                        onChange={handleChange}
-                        min="0"
-                        required
-                    />
+            <form className="score-form" onSubmit={handleSubmit}>
+                <div className="match-info-header">
+                    <p><strong>Tournament:</strong> {match.tournament.name}</p>
+                    <p><strong>Date:</strong> {new Date(match.matchDate).toLocaleDateString()}</p>
+                    <p><strong>Court:</strong> {match.court}</p>
                 </div>
-                <div className="form-group">
-                    <label htmlFor="player2Score">{match.player2Name} Score</label>
-                    <input
-                        type="number"
-                        id="player2Score"
-                        name="player2Score"
-                        value={formData.player2Score}
-                        onChange={handleChange}
-                        min="0"
-                        required
-                    />
+
+                {error && <div className="error-container">{error}</div>}
+                {success && <div className="success-message">{success}</div>}
+
+                <div className="score-inputs">
+                    <div className="player-score">
+                        <h3>{match.player1.username}</h3>
+                        <div className="set-inputs">
+                            {scores.player1Sets.map((score, index) => (
+                                <input
+                                    key={index}
+                                    type="number"
+                                    className="set-input"
+                                    value={score}
+                                    onChange={(e) => handleScoreChange(1, index, e.target.value)}
+                                    min="0"
+                                    max="7"
+                                    placeholder={`Set ${index + 1}`}
+                                />
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="player-score">
+                        <h3>{match.player2.username}</h3>
+                        <div className="set-inputs">
+                            {scores.player2Sets.map((score, index) => (
+                                <input
+                                    key={index}
+                                    type="number"
+                                    className="set-input"
+                                    value={score}
+                                    onChange={(e) => handleScoreChange(2, index, e.target.value)}
+                                    min="0"
+                                    max="7"
+                                    placeholder={`Set ${index + 1}`}
+                                />
+                            ))}
+                        </div>
+                    </div>
                 </div>
-                <div className="form-group">
-                    <label htmlFor="winner">Winner</label>
-                    <select
-                        id="winner"
-                        name="winner"
-                        value={formData.winner}
-                        onChange={handleChange}
-                        required
-                    >
-                        <option value="">Select winner</option>
-                        <option value={match.player1Id}>{match.player1Name}</option>
-                        <option value={match.player2Id}>{match.player2Name}</option>
-                    </select>
-                </div>
-                <div className="form-actions">
-                    <button type="submit">Update Score</button>
-                    <button type="button" onClick={() => navigate('/referee/schedule')}>
-                        Cancel
-                    </button>
-                </div>
+
+                <button type="submit" className="submit-score">
+                    Update Score
+                </button>
             </form>
         </div>
     );

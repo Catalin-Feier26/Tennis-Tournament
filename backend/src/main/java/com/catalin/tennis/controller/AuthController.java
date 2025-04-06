@@ -13,6 +13,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
@@ -30,8 +33,8 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> login(@Valid @RequestBody LoginDTO loginDTO) {
-        String token = userService.login(loginDTO);
+    public ResponseEntity<Map<String,String>> login(@Valid @RequestBody LoginDTO loginDTO) {
+        Map<String,String> token = userService.login(loginDTO);
         return ResponseEntity.ok(token);
     }
 }

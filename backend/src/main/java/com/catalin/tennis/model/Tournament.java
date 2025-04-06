@@ -31,6 +31,9 @@ public class Tournament {
     @Column(name="end_date",nullable = false)
     private LocalDate endDate;
 
+    @Column(name="registration_deadline",nullable = true)
+    private LocalDate registrationDeadline;
+
     @OneToMany(mappedBy = "tournament", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Match> matches = new ArrayList<>();
 
@@ -42,6 +45,7 @@ public class Tournament {
         private String name;
         private LocalDate startDate;
         private LocalDate endDate;
+        private LocalDate registrationDeadline;
 
         public TournamentBuilder name(String name){
             this.name=name;
@@ -55,11 +59,16 @@ public class Tournament {
             this.endDate=endDate;
             return this;
         }
+        public TournamentBuilder registrationDeadline(LocalDate registrationDeadline){
+            this.registrationDeadline=registrationDeadline;
+            return this;
+        }
         public Tournament build(){
             Tournament tournament=new Tournament();
             tournament.setName(this.name);
             tournament.setStartDate(this.startDate);
             tournament.setEndDate(this.endDate);
+            tournament.setRegistrationDeadline(this.registrationDeadline);
             return tournament;
         }
     }

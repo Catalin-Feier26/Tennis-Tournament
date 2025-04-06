@@ -11,5 +11,5 @@ public interface MatchService {
     MatchResponseDTO updateScore(UpdateScoreDTO dto);
     List<MatchResponseDTO> getMatchesByTournament(Long tournamentId);
     List<MatchResponseDTO> getMatchesByReferee(Long refereeId);
-    List<MatchResponseDTO> getMatchesByPlayer(Long playerId);
+    List<MatchResponseDTO> getMatchesByPlayer(String username);
 }

@@ -4,6 +4,7 @@ import com.catalin.tennis.dto.request.LoginDTO;
 import com.catalin.tennis.dto.request.RegisterUserDTO;
 import com.catalin.tennis.dto.request.UpdateUserDTO;
 import com.catalin.tennis.dto.response.UserResponseDTO;
+import com.catalin.tennis.exception.InvalidPasswordException;
 import com.catalin.tennis.exception.UserNotFoundException;
 import com.catalin.tennis.factory.UserFactory;
 import com.catalin.tennis.model.User;
@@ -16,7 +17,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -48,19 +51,28 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserResponseDTO updateUser(String username, UpdateUserDTO dto){
-        User user=userRepository.findByUsername(username).orElseThrow(
-                () -> new UserNotFoundException("User not found with the username: " + username)
-        );
+    public UserResponseDTO updateUser(String username, UpdateUserDTO dto) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UserNotFoundException("User not found with the username: " + username));
         user.setName(dto.getName());
-
-        if(dto.getPassword() != null && !dto.getPassword().isEmpty()){
-            String encodedPassword = passwordEncoder.encode(dto.getPassword());
+        if (dto.getNewPassword() != null && !dto.getNewPassword().isEmpty()) {
+            if (dto.getOldPassword() == null || dto.getOldPassword().isEmpty()) {
+                throw new IllegalArgumentException("Old password is required to set a new password");
+            }
+            if (!passwordEncoder.matches(dto.getOldPassword(), user.getPasswordHash())) {
+                throw new IllegalArgumentException("Old password is incorrect");
+            }
+            String encodedPassword = passwordEncoder.encode(dto.getNewPassword());
             user.setPasswordHash(encodedPassword);
         }
+        if (dto.getRole() != null && !dto.getRole().isEmpty()) {
+            user.setRole(com.catalin.tennis.model.enums.UserRoles.valueOf(dto.getRole()));
+        }
         userRepository.save(user);
-        return new UserResponseDTO(user.getUsername(),user.getName(),user.getRole());
+        return new UserResponseDTO(user.getUsername(), user.getName(), user.getRole());
     }
+
+
 
     @Override
     public void deleteUser(String username){
@@ -88,16 +100,20 @@ public class UserServiceImpl implements UserService {
         return new UserResponseDTO(user.getUsername(),user.getName(),user.getRole());
     }
     @Override
-    public String login(LoginDTO loginDTO) {
+    public Map<String,String> login(LoginDTO loginDTO) {
         User user = userRepository.findByUsername(loginDTO.getUsername())
                 .orElseThrow(() -> new UserNotFoundException("User not found with username: " + loginDTO.getUsername()));
 
         if (!passwordEncoder.matches(loginDTO.getPassword(), user.getPasswordHash())) {
-            throw new IllegalArgumentException("Invalid password");
+            throw new InvalidPasswordException("Invalid password");
         }
 
         String token = jwtUtil.generateToken(user);
-        return token;
+        Map<String,String> response = new HashMap<>();
+        response.put("token",token);
+        response.put("role",user.getRole().toString());
+        response.put("username",user.getUsername());
+        return response;
     }
 
     @Override
