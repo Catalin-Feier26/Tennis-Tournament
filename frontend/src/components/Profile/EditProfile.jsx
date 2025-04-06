@@ -12,11 +12,10 @@ const EditProfile = () => {
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
     const [loading, setLoading] = useState(false);
-    const token = localStorage.getItem('token');
-    const username = localStorage.getItem('username');
+    const token = sessionStorage.getItem('token');
+    const username = sessionStorage.getItem('username');
 
     useEffect(() => {
-        // Fetch current user data
         const fetchUserData = async () => {
             try {
                 const response = await fetch(`http://localhost:9090/api/users/${username}`, {
@@ -32,7 +31,6 @@ const EditProfile = () => {
                     }));
                 } else if (response.status === 403) {
                     setError('Access denied. Please log in again.');
-                    // Redirect to login if token is invalid
                     window.location.href = '/login';
                 } else {
                     throw new Error('Failed to load user data');
@@ -41,7 +39,7 @@ const EditProfile = () => {
                 setError('Failed to load user data');
             }
         };
-        
+
         if (token && username) {
             fetchUserData();
         }
@@ -60,7 +58,6 @@ const EditProfile = () => {
         setSuccess('');
         setLoading(true);
 
-        // Validate passwords match if updating password
         if (formData.newPassword && formData.newPassword !== formData.confirmPassword) {
             setError('New passwords do not match');
             setLoading(false);
@@ -83,18 +80,7 @@ const EditProfile = () => {
 
             if (response.ok) {
                 setSuccess('Profile updated successfully');
-
-                // Optionally, if the update endpoint returns updated user info in JSON,
-                // you can parse it and update localStorage accordingly.
-                // For example:
-                // const updatedUser = await response.json();
-                // localStorage.setItem('name', updatedUser.name);
-                // localStorage.setItem('username', updatedUser.username);
-
-                // If the endpoint does not return updated data, update localStorage manually.
-                localStorage.setItem('name', formData.name);
-
-                // Clear password fields after a successful update
+                sessionStorage.setItem('name', formData.name);
                 setFormData(prev => ({
                     ...prev,
                     currentPassword: '',
@@ -114,7 +100,6 @@ const EditProfile = () => {
             setLoading(false);
         }
     };
-
 
     if (!token || !username) {
         return <Navigate to="/login" />;
@@ -189,4 +174,4 @@ const EditProfile = () => {
     );
 };
 
-export default EditProfile; 
+export default EditProfile;

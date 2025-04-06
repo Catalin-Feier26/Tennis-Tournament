@@ -1,5 +1,6 @@
 package com.catalin.tennis.controller;
 
+import com.catalin.tennis.dto.request.CreateUserDTO;
 import com.catalin.tennis.dto.request.UpdateUserDTO;
 import com.catalin.tennis.dto.response.UserResponseDTO;
 import com.catalin.tennis.service.UserService;
@@ -41,4 +42,11 @@ public class UserController {
         userService.deleteUser(username);
         return ResponseEntity.ok("User deleted successfully");
     }
+
+    @PostMapping
+    public ResponseEntity<UserResponseDTO> createUser(@Valid @RequestBody CreateUserDTO createUserDTO) {
+        UserResponseDTO newUser = userService.createUser(createUserDTO);
+        return ResponseEntity.ok(newUser);
+    }
+
 }

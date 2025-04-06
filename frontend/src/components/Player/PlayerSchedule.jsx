@@ -5,8 +5,8 @@ const PlayerSchedule = () => {
     const [matches, setMatches] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
-    const token = localStorage.getItem('token');
-    const username = localStorage.getItem('username');
+    const token = sessionStorage.getItem('token');
+    const username = sessionStorage.getItem('username');
 
     useEffect(() => {
         const fetchMatches = async () => {
@@ -55,30 +55,30 @@ const PlayerSchedule = () => {
                 <div className="table-container">
                     <table>
                         <thead>
-                            <tr>
-                                <th>Tournament</th>
-                                <th>Opponent</th>
-                                <th>Date</th>
-                                <th>Time</th>
-                                <th>Court</th>
-                                <th>Status</th>
-                            </tr>
+                        <tr>
+                            <th>Tournament</th>
+                            <th>Opponent</th>
+                            <th>Date</th>
+                            <th>Time</th>
+                            <th>Court</th>
+                            <th>Status</th>
+                        </tr>
                         </thead>
                         <tbody>
-                            {matches.map(match => (
-                                <tr key={match.id}>
-                                    <td>{match.tournament.name}</td>
-                                    <td>
-                                        {match.player1.username === username 
-                                            ? match.player2.username 
-                                            : match.player1.username}
-                                    </td>
-                                    <td>{new Date(match.matchDate).toLocaleDateString()}</td>
-                                    <td>{new Date(match.matchDate).toLocaleTimeString()}</td>
-                                    <td>{match.court}</td>
-                                    <td>{match.status}</td>
-                                </tr>
-                            ))}
+                        {matches.map(match => (
+                            <tr key={match.id}>
+                                <td>{match.tournament.name}</td>
+                                <td>
+                                    {match.player1.username === username
+                                        ? match.player2.username
+                                        : match.player1.username}
+                                </td>
+                                <td>{new Date(match.matchDate).toLocaleDateString()}</td>
+                                <td>{new Date(match.matchDate).toLocaleTimeString()}</td>
+                                <td>{match.court}</td>
+                                <td>{match.status}</td>
+                            </tr>
+                        ))}
                         </tbody>
                     </table>
                 </div>
@@ -87,4 +87,4 @@ const PlayerSchedule = () => {
     );
 };
 
-export default PlayerSchedule; 
+export default PlayerSchedule;

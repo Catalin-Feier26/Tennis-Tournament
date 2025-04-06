@@ -1,5 +1,6 @@
 package com.catalin.tennis.dto.request;
 
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
@@ -8,9 +9,8 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 public class RegistrationRequestDTO {
-
-    @NotNull(message = "Player ID is required")
-    private Long playerId;
+    @NotBlank(message = "Player username is required")
+    private String playerUsername;
 
     @NotNull(message = "Tournament ID is required")
     private Long tournamentId;

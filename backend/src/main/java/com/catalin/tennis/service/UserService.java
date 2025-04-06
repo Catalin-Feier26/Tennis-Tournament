@@ -1,6 +1,7 @@
 package com.catalin.tennis.service;
 
 
+import com.catalin.tennis.dto.request.CreateUserDTO;
 import com.catalin.tennis.dto.request.LoginDTO;
 import com.catalin.tennis.dto.request.RegisterUserDTO;
 import com.catalin.tennis.dto.request.UpdateUserDTO;
@@ -20,4 +21,5 @@ public interface UserService {
     List<UserResponseDTO> getAllUsers();
     Map<String,String> login(LoginDTO loginDTO);
 
+    UserResponseDTO createUser(CreateUserDTO createUserDTO);
 }

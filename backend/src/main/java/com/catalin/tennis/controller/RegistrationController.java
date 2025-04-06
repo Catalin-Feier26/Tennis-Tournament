@@ -2,6 +2,8 @@ package com.catalin.tennis.controller;
 
 import com.catalin.tennis.dto.request.RegistrationRequestDTO;
 import com.catalin.tennis.dto.response.RegistrationResponseDTO;
+import com.catalin.tennis.dto.response.RegistrationStatusDTO;
+import com.catalin.tennis.exception.RegistrationAlreadyExistsException;
 import com.catalin.tennis.service.RegistrationService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -20,10 +22,16 @@ public class RegistrationController {
     }
 
     @PostMapping
-    public ResponseEntity<RegistrationResponseDTO> registerPLayer(@Valid @RequestBody RegistrationRequestDTO dto){
-        RegistrationResponseDTO response =registrationService.registerPlayer(dto);
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
+    public ResponseEntity<?> registerPlayer(@Valid @RequestBody RegistrationRequestDTO dto){
+        try {
+            RegistrationResponseDTO response = registrationService.registerPlayer(dto);
+            return new ResponseEntity<>(response, HttpStatus.CREATED);
+        } catch (RegistrationAlreadyExistsException ex) {
+            RegistrationStatusDTO status = new RegistrationStatusDTO("You are already registered for this tournament");
+            return new ResponseEntity<>(status, HttpStatus.OK);
+        }
     }
+
     @GetMapping("/player/{playerId}")
     public ResponseEntity<List<RegistrationResponseDTO>> getRegistrationsByPlayer(@PathVariable Long playerId){
         List<RegistrationResponseDTO> registrations=registrationService.getRegistrationsByPlayer(playerId);

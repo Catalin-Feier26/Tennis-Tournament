@@ -1,5 +1,6 @@
 package com.catalin.tennis.exception;
 
+import com.catalin.tennis.dto.response.RegistrationStatusDTO;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -33,7 +34,11 @@ public class GlobalExceptionHandler {
     public ResponseEntity<String> handleTournamentNotFound(TournamentNotFoundException ex) {
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND);
     }
-
+    @ExceptionHandler(RegistrationAlreadyExistsException.class)
+    public ResponseEntity<?> handleRegistrationAlreadyExists(RegistrationAlreadyExistsException ex) {
+        RegistrationStatusDTO status = new RegistrationStatusDTO("You are already registered for this tournament");
+        return new ResponseEntity<>(status, HttpStatus.OK);
+    }
     @ExceptionHandler(Exception.class)
     public ResponseEntity<String> handleGeneric(Exception ex) {
         return new ResponseEntity<>("Internal error: " + ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);

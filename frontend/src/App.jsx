@@ -28,6 +28,7 @@ import UpdateScore from './components/Referee/UpdateScore';
 import AdminDashboard from './components/Admin/AdminDashboard';
 import UserManagement from './components/Admin/UserManagement';
 import MatchManagement from './components/Admin/MatchManagement';
+import TournamentManagement from './components/Admin/TournamentManagement'; // <-- Import TournamentManagement
 
 // Protected Route component
 const ProtectedRoute = ({ children, allowedRoles }) => {
@@ -145,6 +146,15 @@ const App = () => {
                 element={
                     <ProtectedRoute allowedRoles={[ROLES.ADMINISTRATOR]}>
                         <MatchManagement />
+                    </ProtectedRoute>
+                }
+            />
+            {/* New Admin Tournament Management route */}
+            <Route
+                path="/admin/tournaments"
+                element={
+                    <ProtectedRoute allowedRoles={[ROLES.ADMINISTRATOR]}>
+                        <TournamentManagement />
                     </ProtectedRoute>
                 }
             />

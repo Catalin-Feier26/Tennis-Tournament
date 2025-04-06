@@ -5,9 +5,9 @@ const API_BASE_URL = 'http://localhost:9090/api';
 const handleResponse = async (response) => {
     if (!response.ok) {
         if (response.status === 403) {
-            localStorage.removeItem('token');
-            localStorage.removeItem('role');
-            localStorage.removeItem('username');
+            sessionStorage.removeItem('token');
+            sessionStorage.removeItem('role');
+            sessionStorage.removeItem('username');
             window.location.href = '/login';
             throw new Error('Session expired. Please login again.');
         }
@@ -19,7 +19,13 @@ const handleResponse = async (response) => {
         }
         throw new Error(error.message || 'Something went wrong');
     }
-    return response.json();
+
+    const contentType = response.headers.get('Content-Type') || '';
+    if (contentType.includes('application/json')) {
+        return response.json();
+    } else {
+        return response.text();
+    }
 };
 
 
@@ -62,8 +68,8 @@ export const updateUser = async (userId, userData, token) => {
     return handleResponse(response);
 };
 
-export const deleteUser = async (userId, token) => {
-    const response = await fetch(`${API_BASE_URL}/users/${userId}`, {
+export const deleteUser = async (username, token) => {
+    const response = await fetch(`${API_BASE_URL}/users/${username}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
     });
@@ -164,10 +170,15 @@ export const createUser = async (userData, token) => {
     });
     return handleResponse(response);
 };
-
+export const getMatchesByTournament = async (tournamentId, token) => {
+    const response = await fetch(`${API_BASE_URL}/matches/tournament/${tournamentId}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+    });
+    return handleResponse(response);
+};
 export const exportMatches = async (token) => {
     const response = await fetch(`${API_BASE_URL}/matches/export`, {
         headers: { 'Authorization': `Bearer ${token}` }
     });
     return response.blob();
-}; 
+};

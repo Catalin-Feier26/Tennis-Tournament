@@ -26,4 +26,6 @@ public class CreateTournamentDTO {
 
     @NotNull(message = "Deadline is required")
     private LocalDate registrationDeadline;
+
+    private int maxParticipants;
 }

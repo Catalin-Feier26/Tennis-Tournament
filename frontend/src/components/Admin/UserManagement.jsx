@@ -12,14 +12,15 @@ const UserManagement = () => {
     const [selectedUser, setSelectedUser] = useState(null);
     const [formData, setFormData] = useState({
         username: '',
-        password: '',
+        newPassword: '',
+        name: '',
         role: 'TENNIS_PLAYER'
     });
+
     const { token } = getCurrentUser();
     const location = useLocation();
     const navigate = useNavigate();
     const queryParams = new URLSearchParams(location.search);
-    const action = queryParams.get('action');
     const usernameToEdit = queryParams.get('username');
 
     useEffect(() => {
@@ -30,7 +31,8 @@ const UserManagement = () => {
                 setSelectedUser(user);
                 setFormData({
                     username: user.username,
-                    password: '',
+                    newPassword: '',
+                    name: user.name,
                     role: user.role
                 });
             }
@@ -81,7 +83,7 @@ const UserManagement = () => {
             try {
                 await deleteUser(username, token);
                 setSuccess('User deleted successfully');
-                fetchUsers();
+                setUsers(prevUsers => prevUsers.filter(user => user.username !== username));
             } catch (error) {
                 setError('Failed to delete user');
             }
@@ -92,7 +94,8 @@ const UserManagement = () => {
         setSelectedUser(null);
         setFormData({
             username: '',
-            password: '',
+            newPassword: '',
+            name: '',
             role: 'TENNIS_PLAYER'
         });
         navigate('/admin/users');
@@ -128,14 +131,25 @@ const UserManagement = () => {
                             />
                         </div>
                         <div className="form-group">
-                            <label htmlFor="password">
+                            <label htmlFor="name">Name</label>
+                            <input
+                                type="text"
+                                id="name"
+                                name="name"
+                                value={formData.name}
+                                onChange={handleInputChange}
+                                required
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label htmlFor="newPassword">
                                 {selectedUser ? 'New Password (leave blank to keep current)' : 'Password'}
                             </label>
                             <input
                                 type="password"
-                                id="password"
-                                name="password"
-                                value={formData.password}
+                                id="newPassword"
+                                name="newPassword"
+                                value={formData.newPassword}
                                 onChange={handleInputChange}
                                 required={!selectedUser}
                             />
@@ -151,7 +165,7 @@ const UserManagement = () => {
                             >
                                 <option value="TENNIS_PLAYER">Tennis Player</option>
                                 <option value="REFEREE">Referee</option>
-                                <option value="ADMIN">Admin</option>
+                                <option value="ADMINISTRATOR">Admin</option>
                             </select>
                         </div>
                         <div className="form-actions">
@@ -176,43 +190,44 @@ const UserManagement = () => {
                     <div className="table-container">
                         <table className="data-table">
                             <thead>
-                                <tr>
-                                    <th>Username</th>
-                                    <th>Role</th>
-                                    <th>Actions</th>
-                                </tr>
+                            <tr>
+                                <th>Username</th>
+                                <th>Role</th>
+                                <th>Actions</th>
+                            </tr>
                             </thead>
                             <tbody>
-                                {users.map(user => (
-                                    <tr key={user.username}>
-                                        <td>{user.username}</td>
-                                        <td>{user.role}</td>
-                                        <td>
-                                            <div className="table-actions">
-                                                <button
-                                                    className="button button-secondary"
-                                                    onClick={() => {
-                                                        setSelectedUser(user);
-                                                        setFormData({
-                                                            username: user.username,
-                                                            password: '',
-                                                            role: user.role
-                                                        });
-                                                        navigate(`/admin/users?username=${user.username}`);
-                                                    }}
-                                                >
-                                                    Edit
-                                                </button>
-                                                <button
-                                                    className="button button-danger"
-                                                    onClick={() => handleDelete(user.username)}
-                                                >
-                                                    Delete
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
+                            {users.map(user => (
+                                <tr key={user.username}>
+                                    <td>{user.username}</td>
+                                    <td>{user.role}</td>
+                                    <td>
+                                        <div className="table-actions">
+                                            <button
+                                                className="button button-secondary"
+                                                onClick={() => {
+                                                    setSelectedUser(user);
+                                                    setFormData({
+                                                        username: user.username,
+                                                        newPassword: '',
+                                                        name: user.name,
+                                                        role: user.role
+                                                    });
+                                                    navigate(`/admin/users?username=${user.username}`);
+                                                }}
+                                            >
+                                                Edit
+                                            </button>
+                                            <button
+                                                className="button button-danger"
+                                                onClick={() => handleDelete(user.username)}
+                                            >
+                                                Delete
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))}
                             </tbody>
                         </table>
                     </div>
@@ -222,4 +237,4 @@ const UserManagement = () => {
     );
 };
 
-export default UserManagement; 
+export default UserManagement;

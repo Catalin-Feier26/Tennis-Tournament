@@ -30,7 +30,7 @@ const AdminDashboard = () => {
             total: users.length,
             players: users.filter(user => user.role === 'TENNIS_PLAYER').length,
             referees: users.filter(user => user.role === 'REFEREE').length,
-            admins: users.filter(user => user.role === 'ADMIN').length
+            admins: users.filter(user => user.role === 'ADMINISTRATOR').length
         };
         return stats;
     };
@@ -51,6 +51,10 @@ const AdminDashboard = () => {
                     </Link>
                     <Link to="/admin/matches" className="button button-primary">
                         Manage Matches
+                    </Link>
+                    {/* New button for Tournament Management */}
+                    <Link to="/admin/tournaments" className="button button-primary">
+                        Manage Tournaments
                     </Link>
                 </div>
             </div>
@@ -96,27 +100,27 @@ const AdminDashboard = () => {
                     <div className="table-container">
                         <table className="data-table">
                             <thead>
-                                <tr>
-                                    <th>Username</th>
-                                    <th>Role</th>
-                                    <th>Action</th>
-                                </tr>
+                            <tr>
+                                <th>Username</th>
+                                <th>Role</th>
+                                <th>Action</th>
+                            </tr>
                             </thead>
                             <tbody>
-                                {users.slice(0, 5).map(user => (
-                                    <tr key={user.username}>
-                                        <td>{user.username}</td>
-                                        <td>{user.role}</td>
-                                        <td>
-                                            <Link 
-                                                to={`/admin/users?username=${user.username}`}
-                                                className="button button-secondary"
-                                            >
-                                                Edit
-                                            </Link>
-                                        </td>
-                                    </tr>
-                                ))}
+                            {users.slice(0, 5).map(user => (
+                                <tr key={user.username}>
+                                    <td>{user.username}</td>
+                                    <td>{user.role}</td>
+                                    <td>
+                                        <Link
+                                            to={`/admin/users?username=${user.username}`}
+                                            className="button button-secondary"
+                                        >
+                                            Edit
+                                        </Link>
+                                    </td>
+                                </tr>
+                            ))}
                             </tbody>
                         </table>
                     </div>
@@ -131,4 +135,4 @@ const AdminDashboard = () => {
     );
 };
 
-export default AdminDashboard; 
+export default AdminDashboard;

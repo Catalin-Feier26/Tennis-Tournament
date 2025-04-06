@@ -6,7 +6,7 @@ import './Home.css';
 const Home = () => {
     const navigate = useNavigate();
     const authenticated = isAuthenticated();
-    const role = localStorage.getItem('role');
+    const role = sessionStorage.getItem('role');
 
     return (
         <div className="home">
@@ -43,7 +43,6 @@ const Home = () => {
                 <p>
                     Get ready to serve and smash! Join our tournament for an unforgettable experience on the court.
                 </p>
-                {/* Removed the tennis image block */}
                 <div className="cta-buttons">
                     {authenticated ? (
                         <button

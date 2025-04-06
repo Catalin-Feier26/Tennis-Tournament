@@ -6,7 +6,7 @@ const TournamentManagement = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
-    const token = localStorage.getItem('token');
+    const token = sessionStorage.getItem('token');
     const [formData, setFormData] = useState({
         name: '',
         startDate: '',
@@ -99,7 +99,7 @@ const TournamentManagement = () => {
         <div className="admin-container">
             <div className="admin-content">
                 <h2>Tournament Management</h2>
-                
+
                 {/* Create Tournament Form */}
                 <div className="create-form">
                     <h3>Create New Tournament</h3>
@@ -175,33 +175,33 @@ const TournamentManagement = () => {
                     <div className="table-container">
                         <table>
                             <thead>
-                                <tr>
-                                    <th>Name</th>
-                                    <th>Start Date</th>
-                                    <th>End Date</th>
-                                    <th>Registration Deadline</th>
-                                    <th>Max Participants</th>
-                                    <th>Actions</th>
-                                </tr>
+                            <tr>
+                                <th>Name</th>
+                                <th>Start Date</th>
+                                <th>End Date</th>
+                                <th>Registration Deadline</th>
+                                <th>Max Participants</th>
+                                <th>Actions</th>
+                            </tr>
                             </thead>
                             <tbody>
-                                {tournaments.map(tournament => (
-                                    <tr key={tournament.id}>
-                                        <td>{tournament.name}</td>
-                                        <td>{new Date(tournament.startDate).toLocaleDateString()}</td>
-                                        <td>{new Date(tournament.endDate).toLocaleDateString()}</td>
-                                        <td>{new Date(tournament.registrationDeadline).toLocaleDateString()}</td>
-                                        <td>{tournament.maxParticipants}</td>
-                                        <td>
-                                            <button
-                                                onClick={() => handleDelete(tournament.id)}
-                                                className="delete-button"
-                                            >
-                                                Delete
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))}
+                            {tournaments.map((tournament, index) => (
+                                <tr key={tournament.id || index}>
+                                    <td>{tournament.name}</td>
+                                    <td>{new Date(tournament.startDate).toLocaleDateString()}</td>
+                                    <td>{new Date(tournament.endDate).toLocaleDateString()}</td>
+                                    <td>{new Date(tournament.registrationDeadline).toLocaleDateString()}</td>
+                                    <td>{tournament.maxParticipants}</td>
+                                    <td>
+                                        <button
+                                            onClick={() => handleDelete(tournament.id)}
+                                            className="delete-button"
+                                        >
+                                            Delete
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))}
                             </tbody>
                         </table>
                     </div>
@@ -211,4 +211,4 @@ const TournamentManagement = () => {
     );
 };
 
-export default TournamentManagement; 
+export default TournamentManagement;

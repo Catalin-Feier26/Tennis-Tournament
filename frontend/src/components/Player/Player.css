@@ -9,6 +9,10 @@
     margin-bottom: 2rem;
     text-align: center;
 }
+.tournament-card.expired {
+    border: 2px solid red;
+    background-color: #ffe6e6;
+}
 
 .tournaments-grid {
     display: grid;

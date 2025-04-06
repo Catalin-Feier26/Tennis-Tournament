@@ -34,9 +34,9 @@ public class RegistrationServiceImpl implements RegistrationService {
     }
     @Override
     public RegistrationResponseDTO registerPlayer(RegistrationRequestDTO dto) {
-        User user = userRepository.findById(dto.getPlayerId()).orElseThrow(
-                () -> new UserNotFoundException("User with this Id doesn't exist")
-        );
+        User user = userRepository.findByUsername(dto.getPlayerUsername())
+                .orElseThrow(() -> new UserNotFoundException("User with this username doesn't exist"));
+
         Tournament tournament = tournamentRepository.findById(dto.getTournamentId()).orElseThrow(
                 () -> new TournamentNotFoundException("Tournament with this id doesn't exist")
         );

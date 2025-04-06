@@ -33,10 +33,11 @@ public class TournamentServiceImpl implements TournamentService {
                 dto.getName(),
                 dto.getStartDate(),
                 dto.getEndDate(),
-                dto.getRegistrationDeadline()
+                dto.getRegistrationDeadline(),
+                dto.getMaxParticipants()
         );
         tournamentRepository.save(tournament);
-        return new TournamentResponseDTO(tournament.getName(),tournament.getStartDate(),tournament.getEndDate(), tournament.getRegistrationDeadline());
+        return new TournamentResponseDTO(tournament.getId(), tournament.getName(),tournament.getStartDate(),tournament.getEndDate(), tournament.getRegistrationDeadline(), tournament.getMaxParticipants());
 
     }
 
@@ -57,7 +58,7 @@ public class TournamentServiceImpl implements TournamentService {
         List<TournamentResponseDTO> dtos = new ArrayList<>();
         for(Tournament t: tournamentList){
             dtos.add(
-                    new TournamentResponseDTO(t.getName(),t.getStartDate(),t.getEndDate(),t.getRegistrationDeadline())
+                    new TournamentResponseDTO(t.getId(),t.getName(),t.getStartDate(),t.getEndDate(),t.getRegistrationDeadline(), t.getMaxParticipants())
             );
         }
         return dtos;
@@ -71,7 +72,7 @@ public class TournamentServiceImpl implements TournamentService {
         Tournament tournament=tournamentRepository.findByName(name).orElseThrow(
                 () -> new TournamentNotFoundException("No such tournament exists")
         );
-        return new TournamentResponseDTO(tournament.getName(),tournament.getStartDate(),tournament.getEndDate(), tournament.getRegistrationDeadline());
+        return new TournamentResponseDTO(tournament.getId(), tournament.getName(),tournament.getStartDate(),tournament.getEndDate(), tournament.getRegistrationDeadline(), tournament.getMaxParticipants());
     }
 
     @Override
@@ -88,7 +89,7 @@ public class TournamentServiceImpl implements TournamentService {
 
         List<TournamentResponseDTO> dtos = new ArrayList<>();
         for (Tournament t : tournamentList) {
-            dtos.add(new TournamentResponseDTO(t.getName(), t.getStartDate(), t.getEndDate(), t.getRegistrationDeadline()));
+            dtos.add(new TournamentResponseDTO(t.getId(),t.getName(), t.getStartDate(), t.getEndDate(), t.getRegistrationDeadline(),t.getMaxParticipants()));
         }
         return dtos;
     }

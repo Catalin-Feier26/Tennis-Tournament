@@ -1,49 +1,48 @@
 // Constants for user roles
-// utils/auth.js
 export const ROLES = {
     ADMINISTRATOR: 'ADMINISTRATOR',
     REFEREE: 'REFEREE',
     TENNIS_PLAYER: 'TENNIS_PLAYER'
 };
 
-// Store user data in localStorage
+// Store user data in sessionStorage
 export const setUserData = (data) => {
-    localStorage.setItem('token', data.token);
-    localStorage.setItem('username', data.username);
-    localStorage.setItem('role', data.role);
+    sessionStorage.setItem('token', data.token);
+    sessionStorage.setItem('username', data.username);
+    sessionStorage.setItem('role', data.role);
 };
 
-// Clear user data from localStorage
+// Clear user data from sessionStorage
 export const clearUserData = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('username');
-    localStorage.removeItem('role');
+    sessionStorage.removeItem('token');
+    sessionStorage.removeItem('username');
+    sessionStorage.removeItem('role');
 };
 
 // Get current user data
 export const getCurrentUser = () => {
     return {
-        token: localStorage.getItem('token') || '',
-        role: localStorage.getItem('role') || '',
-        username: localStorage.getItem('username') || ''
+        token: sessionStorage.getItem('token') || '',
+        role: sessionStorage.getItem('role') || '',
+        username: sessionStorage.getItem('username') || ''
     };
 };
 
 // Check if user is authenticated
 export const isAuthenticated = () => {
-    const token = localStorage.getItem('token');
+    const token = sessionStorage.getItem('token');
     return !!token;
 };
 
 // Check if user has specific role
 export const hasRole = (role) => {
-    const userRole = localStorage.getItem('role');
+    const userRole = sessionStorage.getItem('role');
     return userRole === role;
 };
 
 // Role-based route protection
 export const checkAccess = (allowedRoles) => {
-    const userRole = localStorage.getItem('role');
+    const userRole = sessionStorage.getItem('role');
     return allowedRoles.includes(userRole);
 };
 
@@ -76,4 +75,4 @@ export const isValidPassword = (password) => {
 // Validate username format
 export const isValidUsername = (username) => {
     return /^[a-zA-Z0-9_]{3,20}$/.test(username);
-}; 
+};

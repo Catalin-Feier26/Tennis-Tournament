@@ -1,11 +1,13 @@
 package com.catalin.tennis.service.implementations;
 
+import com.catalin.tennis.dto.request.CreateUserDTO;
 import com.catalin.tennis.dto.request.LoginDTO;
 import com.catalin.tennis.dto.request.RegisterUserDTO;
 import com.catalin.tennis.dto.request.UpdateUserDTO;
 import com.catalin.tennis.dto.response.UserResponseDTO;
 import com.catalin.tennis.exception.InvalidPasswordException;
 import com.catalin.tennis.exception.UserNotFoundException;
+import com.catalin.tennis.exception.UsernameAlreadyExistsException;
 import com.catalin.tennis.factory.UserFactory;
 import com.catalin.tennis.model.User;
 import com.catalin.tennis.model.enums.UserRoles;
@@ -55,22 +57,25 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UserNotFoundException("User not found with the username: " + username));
         user.setName(dto.getName());
+
         if (dto.getNewPassword() != null && !dto.getNewPassword().isEmpty()) {
-            if (dto.getOldPassword() == null || dto.getOldPassword().isEmpty()) {
-                throw new IllegalArgumentException("Old password is required to set a new password");
-            }
-            if (!passwordEncoder.matches(dto.getOldPassword(), user.getPasswordHash())) {
-                throw new IllegalArgumentException("Old password is incorrect");
+            if (dto.getOldPassword() != null && !dto.getOldPassword().isEmpty()) {
+                if (!passwordEncoder.matches(dto.getOldPassword(), user.getPasswordHash())) {
+                    throw new InvalidPasswordException("Old password is incorrect");
+                }
             }
             String encodedPassword = passwordEncoder.encode(dto.getNewPassword());
             user.setPasswordHash(encodedPassword);
         }
+
         if (dto.getRole() != null && !dto.getRole().isEmpty()) {
-            user.setRole(com.catalin.tennis.model.enums.UserRoles.valueOf(dto.getRole()));
+            user.setRole(UserRoles.valueOf(dto.getRole()));
         }
+
         userRepository.save(user);
         return new UserResponseDTO(user.getUsername(), user.getName(), user.getRole());
     }
+
 
 
 
@@ -115,6 +120,32 @@ public class UserServiceImpl implements UserService {
         response.put("username",user.getUsername());
         return response;
     }
+
+    @Override
+    public UserResponseDTO createUser(CreateUserDTO dto) {
+        // Check if the user already exists
+        if (userRepository.existsUserByUsername(dto.getUsername())) {
+            throw new UsernameAlreadyExistsException("User with this username already exists");
+        }
+        // Encode the password
+        String hashedPassword = passwordEncoder.encode(dto.getPassword());
+        UserRoles roleEnum;
+        try {
+            roleEnum = UserRoles.valueOf(dto.getRole().toString());
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Invalid role provided");
+        }
+
+        User user = UserFactory.createUser(
+                dto.getUsername(),
+                hashedPassword,
+                dto.getName(),
+                roleEnum
+        );
+        userRepository.save(user);
+        return new UserResponseDTO(user.getUsername(), user.getName(), user.getRole());
+    }
+
 
     @Override
     public UserResponseDTO getUserByUsername(String username) {
