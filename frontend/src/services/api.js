@@ -182,3 +182,9 @@ export const exportMatches = async (token) => {
     });
     return response.blob();
 };
+export const getRegisteredPlayersByTournament = async (tournamentId, token) => {
+    const response = await fetch(`${API_BASE_URL}/registrations/tournament/${tournamentId}/players`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+    });
+    return handleResponse(response);
+};

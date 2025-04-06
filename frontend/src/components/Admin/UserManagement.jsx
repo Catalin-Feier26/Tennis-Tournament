@@ -68,7 +68,10 @@ const UserManagement = () => {
                 await updateUser(selectedUser.username, formData, token);
                 setSuccess('User updated successfully');
             } else {
-                await createUser(formData, token);
+                // Rename newPassword to password before creation
+                const submissionData = { ...formData, password: formData.newPassword };
+                delete submissionData.newPassword;
+                await createUser(submissionData, token);
                 setSuccess('User created successfully');
             }
             fetchUsers();
@@ -101,6 +104,18 @@ const UserManagement = () => {
         navigate('/admin/users');
     };
 
+    // Sorting functions
+    const sortByField = (field) => {
+        const sortedUsers = [...users].sort((a, b) => {
+            const fieldA = a[field].toLowerCase();
+            const fieldB = b[field].toLowerCase();
+            if (fieldA < fieldB) return -1;
+            if (fieldA > fieldB) return 1;
+            return 0;
+        });
+        setUsers(sortedUsers);
+    };
+
     if (loading) {
         return <div className="loading-container">Loading users...</div>;
     }
@@ -113,6 +128,16 @@ const UserManagement = () => {
 
             {error && <div className="error-container">{error}</div>}
             {success && <div className="success-container">{success}</div>}
+
+            {/* Sorting Buttons */}
+            <div className="sort-buttons">
+                <button className="button button-secondary" onClick={() => sortByField('username')}>
+                    Sort by Username
+                </button>
+                <button className="button button-secondary" onClick={() => sortByField('role')}>
+                    Sort by Role
+                </button>
+            </div>
 
             <div className="dashboard-grid">
                 <div className="dashboard-card">

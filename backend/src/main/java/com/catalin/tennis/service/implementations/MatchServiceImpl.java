@@ -17,6 +17,8 @@ import com.catalin.tennis.repository.UserRepository;
 import com.catalin.tennis.service.MatchService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,39 +29,59 @@ public class MatchServiceImpl implements MatchService {
     private final MatchRepository matchRepository;
     private final UserRepository userRepository;
     private final TournamentRepository tournamentRepository;
+    private static final Logger logger = LoggerFactory.getLogger(MatchServiceImpl.class);
 
     @Autowired
-    public MatchServiceImpl(MatchRepository matchRepository, UserRepository userRepository, TournamentRepository tournamentRepository ){
-        this.matchRepository=matchRepository;
+    public MatchServiceImpl(MatchRepository matchRepository, UserRepository userRepository, TournamentRepository tournamentRepository) {
+        this.matchRepository = matchRepository;
         this.userRepository = userRepository;
         this.tournamentRepository = tournamentRepository;
     }
 
     @Override
     public MatchResponseDTO createMatch(CreateMatchDTO dto) {
-        if(matchRepository.existsByPlayer1_IdAndPlayer2_IdAndReferee_IdAndTournament_IdAndStartDate
-                (dto.getPlayer1Id(),dto.getPlayer2Id(),dto.getRefereeId(),dto.getTournamentId(),dto.getStartDate()))
-                    throw new MatchAlreadyExistsException("THIS match already exists in the tournament");
-        User player1 = userRepository.findById(dto.getPlayer1Id()).orElseThrow(
-                () -> new UserNotFoundException("Player1 not found")
-        );
-        User player2 = userRepository.findById(dto.getPlayer2Id()).orElseThrow(
-                () -> new UserNotFoundException("Player2 not found")
-        );
-        User referee = userRepository.findById(dto.getRefereeId()).orElseThrow(
-                () -> new UserNotFoundException("Referee not found")
-        );
-        Tournament tournament=tournamentRepository.findById(dto.getTournamentId()).orElseThrow(
-                () -> new TournamentNotFoundException("Tournament was not found")
-        );
-        Match match=MatchFactory.createMatch(
-                player1,
-                player2,
-                referee,
-                tournament,
-                dto.getStartDate()
-        );
+        logger.info("Creating match with DTO: {}", dto);
+
+        if (matchRepository.existsByPlayer1_IdAndPlayer2_IdAndReferee_IdAndTournament_IdAndStartDate(
+                dto.getPlayer1Id(), dto.getPlayer2Id(), dto.getRefereeId(), dto.getTournamentId(), dto.getStartDate())) {
+            logger.error("Match already exists with players {}, {}, referee {}, tournament {}, start date {}",
+                    dto.getPlayer1Id(), dto.getPlayer2Id(), dto.getRefereeId(), dto.getTournamentId(), dto.getStartDate());
+            throw new MatchAlreadyExistsException("THIS match already exists in the tournament");
+        }
+
+        User player1 = userRepository.findById(dto.getPlayer1Id())
+                .orElseThrow(() -> {
+                    logger.error("Player1 not found for ID: {}", dto.getPlayer1Id());
+                    return new UserNotFoundException("Player1 not found");
+                });
+        User player2 = userRepository.findById(dto.getPlayer2Id())
+                .orElseThrow(() -> {
+                    logger.error("Player2 not found for ID: {}", dto.getPlayer2Id());
+                    return new UserNotFoundException("Player2 not found");
+                });
+        User referee = userRepository.findById(dto.getRefereeId())
+                .orElseThrow(() -> {
+                    logger.error("Referee not found for ID: {}", dto.getRefereeId());
+                    return new UserNotFoundException("Referee not found");
+                });
+        Tournament tournament = tournamentRepository.findById(dto.getTournamentId())
+                .orElseThrow(() -> {
+                    logger.error("Tournament not found for ID: {}", dto.getTournamentId());
+                    return new TournamentNotFoundException("Tournament was not found");
+                });
+
+        // Create a match using the factory, which may throw an exception if conditions aren't met
+        Match match;
+        try {
+            match = MatchFactory.createMatch(player1, player2, referee, tournament, dto.getCourtNumber(), dto.getStartDate());
+        } catch (IllegalArgumentException ex) {
+            logger.error("Error in MatchFactory: {}", ex.getMessage());
+            throw ex;
+        }
+
         matchRepository.save(match);
+        logger.info("Match created with ID: {}", match.getId());
+
         return new MatchResponseDTO(
                 match.getPlayer1().getName(),
                 match.getPlayer2().getName(),
@@ -67,6 +89,7 @@ public class MatchServiceImpl implements MatchService {
                 match.getTournament().getName(),
                 match.getScorePlayer1(),
                 match.getScorePlayer2(),
+                match.getCourtNumber(),
                 match.getStartDate()
         );
     }
@@ -82,7 +105,6 @@ public class MatchServiceImpl implements MatchService {
 
         match.setScorePlayer1(dto.getScorePlayer1());
         match.setScorePlayer2(dto.getScorePlayer2());
-
         matchRepository.save(match);
 
         return new MatchResponseDTO(
@@ -92,6 +114,7 @@ public class MatchServiceImpl implements MatchService {
                 match.getTournament().getName(),
                 match.getScorePlayer1(),
                 match.getScorePlayer2(),
+                match.getCourtNumber(),
                 match.getStartDate()
         );
     }
@@ -125,20 +148,19 @@ public class MatchServiceImpl implements MatchService {
         return matchListToMatchResponseList(matches);
     }
 
-    private List<MatchResponseDTO> matchListToMatchResponseList(List<Match> matches){
-        List<MatchResponseDTO> matchResponseDTOS=new ArrayList<>();
-        for(Match m: matches){
-            matchResponseDTOS.add(
-                    new MatchResponseDTO(
-                            m.getPlayer1().getName(),
-                            m.getPlayer2().getName(),
-                            m.getReferee().getName(),
-                            m.getTournament().getName(),
-                            m.getScorePlayer1(),
-                            m.getScorePlayer2(),
-                            m.getStartDate()
-                    )
-            );
+    private List<MatchResponseDTO> matchListToMatchResponseList(List<Match> matches) {
+        List<MatchResponseDTO> matchResponseDTOS = new ArrayList<>();
+        for (Match m : matches) {
+            matchResponseDTOS.add(new MatchResponseDTO(
+                    m.getPlayer1().getName(),
+                    m.getPlayer2().getName(),
+                    m.getReferee().getName(),
+                    m.getTournament().getName(),
+                    m.getScorePlayer1(),
+                    m.getScorePlayer2(),
+                    m.getCourtNumber(),
+                    m.getStartDate()
+            ));
         }
         return matchResponseDTOS;
     }

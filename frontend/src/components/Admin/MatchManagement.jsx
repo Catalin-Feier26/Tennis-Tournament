@@ -6,21 +6,22 @@ import {
     createMatch,
     updateMatch,
     deleteMatch,
-    getAllUsers
+    getAllUsers,
+    getRegisteredPlayersByTournament
 } from '../../services/api';
 import { getCurrentUser } from '../../utils/auth';
 import './Admin.css';
 
 const MatchManagement = () => {
-    // State for tournaments
+    // State for tournaments and selected tournament
     const [tournaments, setTournaments] = useState([]);
-    // State for selected tournament (if any)
     const [selectedTournament, setSelectedTournament] = useState(null);
-    // State for matches belonging to the selected tournament
+    // Matches for the selected tournament
     const [matches, setMatches] = useState([]);
-    // State for users (to populate drop-downs)
+    // Registered players (usernames) for the selected tournament
+    const [registeredPlayers, setRegisteredPlayers] = useState([]);
+    // Other state variables
     const [users, setUsers] = useState([]);
-    // Other UI state variables
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
@@ -37,8 +38,8 @@ const MatchManagement = () => {
     const { token } = getCurrentUser();
     const navigate = useNavigate();
 
-    // On mount, fetch tournaments and users
     useEffect(() => {
+        // Fetch tournaments and users on component mount
         fetchTournaments();
         fetchUsers();
         setLoading(false);
@@ -47,6 +48,8 @@ const MatchManagement = () => {
     const fetchTournaments = async () => {
         try {
             const data = await getTournaments(token);
+            // Optional: sort tournaments by registration deadline (closest first)
+            data.sort((a, b) => new Date(a.registrationDeadline) - new Date(b.registrationDeadline));
             setTournaments(data);
         } catch (err) {
             setError('Failed to load tournaments.');
@@ -71,10 +74,23 @@ const MatchManagement = () => {
         }
     };
 
+    const fetchRegisteredPlayers = async (tournamentId) => {
+        try {
+            const data = await getRegisteredPlayersByTournament(tournamentId, token);
+            // data should be an array of usernames (strings)
+            setRegisteredPlayers(data);
+        } catch (err) {
+            setError('Failed to load registered players.');
+        }
+    };
+
     // Called when a tournament row is clicked
     const handleTournamentSelect = (tournament) => {
         setSelectedTournament(tournament);
         fetchMatchesForTournament(tournament.id);
+        fetchRegisteredPlayers(tournament.id);
+        resetForm();
+        setSelectedMatch(null);
     };
 
     const handleInputChange = (e) => {
@@ -90,7 +106,7 @@ const MatchManagement = () => {
         setError('');
         setSuccess('');
 
-        // Combine matchDate and matchTime into an ISO string, and include tournament id
+        // Combine matchDate and matchTime into an ISO string and include tournamentId
         const matchData = {
             ...formData,
             matchDateTime: `${formData.matchDate}T${formData.matchTime}`,
@@ -105,7 +121,7 @@ const MatchManagement = () => {
                 await createMatch(matchData, token);
                 setSuccess('Match created successfully');
             }
-            // Refresh matches list for this tournament
+            // Refresh matches list for the selected tournament
             fetchMatchesForTournament(selectedTournament.id);
             resetForm();
         } catch (err) {
@@ -137,10 +153,10 @@ const MatchManagement = () => {
         });
     };
 
-    // Return to the tournaments list view
     const clearTournamentSelection = () => {
         setSelectedTournament(null);
         setMatches([]);
+        setRegisteredPlayers([]);
         resetForm();
     };
 
@@ -198,7 +214,7 @@ const MatchManagement = () => {
                 </div>
             ) : (
                 <>
-                    {/* When a tournament is selected, show matches and the match form */}
+                    {/* Display matches for the selected tournament */}
                     <div className="dashboard-card">
                         <h3>Matches for {selectedTournament.name}</h3>
                         <div className="table-container">
@@ -215,9 +231,7 @@ const MatchManagement = () => {
                                 <tbody>
                                 {matches.map(match => (
                                     <tr key={match.id}>
-                                        <td>
-                                            {match.player1Username} vs {match.player2Username}
-                                        </td>
+                                        <td>{match.player1Username} vs {match.player2Username}</td>
                                         <td>{match.refereeUsername}</td>
                                         <td>{match.courtNumber}</td>
                                         <td>{new Date(match.matchDateTime).toLocaleString()}</td>
@@ -255,6 +269,7 @@ const MatchManagement = () => {
                         </div>
                     </div>
 
+                    {/* Match Form */}
                     <div className="dashboard-card">
                         <h3>{selectedMatch ? 'Edit Match' : 'Create New Match'}</h3>
                         <form onSubmit={handleSubmit} className="match-form">
@@ -268,9 +283,9 @@ const MatchManagement = () => {
                                     required
                                 >
                                     <option value="">Select Player 1</option>
-                                    {users.filter(user => user.role === 'TENNIS_PLAYER').map(user => (
-                                        <option key={user.username} value={user.username}>
-                                            {user.username}
+                                    {registeredPlayers.map(username => (
+                                        <option key={username} value={username}>
+                                            {username}
                                         </option>
                                     ))}
                                 </select>
@@ -286,9 +301,9 @@ const MatchManagement = () => {
                                     required
                                 >
                                     <option value="">Select Player 2</option>
-                                    {users.filter(user => user.role === 'TENNIS_PLAYER').map(user => (
-                                        <option key={user.username} value={user.username}>
-                                            {user.username}
+                                    {registeredPlayers.map(username => (
+                                        <option key={username} value={username}>
+                                            {username}
                                         </option>
                                     ))}
                                 </select>

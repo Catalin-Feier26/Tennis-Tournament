@@ -1,6 +1,5 @@
 package com.catalin.tennis.model;
 
-
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
@@ -8,7 +7,7 @@ import java.time.LocalDateTime;
 @Setter
 @Getter
 @Entity
-@Table(name="matches")
+@Table(name = "matches")
 @NoArgsConstructor
 @AllArgsConstructor
 public class Match {
@@ -19,11 +18,11 @@ public class Match {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name="player1_id", nullable = false)
+    @JoinColumn(name = "player1_id", nullable = false)
     private User player1;
 
     @ManyToOne
-    @JoinColumn(name="player2_id",nullable = false)
+    @JoinColumn(name = "player2_id", nullable = false)
     private User player2;
 
     @ManyToOne
@@ -31,16 +30,19 @@ public class Match {
     private User referee;
 
     @ManyToOne
-    @JoinColumn(name="tournament_id",nullable = false)
+    @JoinColumn(name = "tournament_id", nullable = false)
     private Tournament tournament;
 
     @Column(name = "score_player1")
     private Integer scorePlayer1;
 
-    @Column(name="score_player2")
+    @Column(name = "score_player2")
     private Integer scorePlayer2;
 
-    @Column(name="start_date",nullable = false)
+    @Column(name = "court_number", nullable = false)
+    private Integer courtNumber;
+
+    @Column(name = "start_date", nullable = false)
     private LocalDateTime startDate;
 
     public static MatchBuilder builder() {
@@ -54,6 +56,7 @@ public class Match {
         private Tournament tournament;
         private Integer scorePlayer1;
         private Integer scorePlayer2;
+        private Integer courtNumber;
         private LocalDateTime startDate;
 
         public MatchBuilder player1(User player1) {
@@ -86,6 +89,11 @@ public class Match {
             return this;
         }
 
+        public MatchBuilder courtNumber(Integer courtNumber) {
+            this.courtNumber = courtNumber;
+            return this;
+        }
+
         public MatchBuilder startDate(LocalDateTime startDate) {
             this.startDate = startDate;
             return this;
@@ -99,6 +107,7 @@ public class Match {
             match.setTournament(this.tournament);
             match.setScorePlayer1(this.scorePlayer1);
             match.setScorePlayer2(this.scorePlayer2);
+            match.setCourtNumber(this.courtNumber);
             match.setStartDate(this.startDate);
             return match;
         }

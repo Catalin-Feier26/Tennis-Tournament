@@ -12,5 +12,6 @@ public class MatchResponseDTO {
     private String tournamentName;
     private int scorePlayer1;
     private int scorePlayer2;
+    private Integer courtNumber;
     private LocalDateTime startDate;
 }

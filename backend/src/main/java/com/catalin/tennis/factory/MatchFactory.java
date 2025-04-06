@@ -7,7 +7,7 @@ import com.catalin.tennis.model.User;
 import java.time.LocalDateTime;
 
 public class MatchFactory {
-    public static Match createMatch(User player1, User player2, User referee, Tournament tournament, LocalDateTime startDate) {
+    public static Match createMatch(User player1, User player2, User referee, Tournament tournament, Integer courtNumber, LocalDateTime startDate) {
         if(player1.equals(player2)){
             throw new IllegalArgumentException("A player cannot be against themselves");
         }
@@ -19,8 +19,7 @@ public class MatchFactory {
                 .player2(player2)
                 .referee(referee)
                 .tournament(tournament)
-                .scorePlayer1(0)
-                .scorePlayer2(0)
+                .courtNumber(courtNumber)
                 .startDate(startDate)
                 .build();
 

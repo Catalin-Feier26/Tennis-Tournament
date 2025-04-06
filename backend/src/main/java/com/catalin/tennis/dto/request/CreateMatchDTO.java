@@ -24,6 +24,9 @@ public class CreateMatchDTO {
     @NotNull(message = "Tournament ID is required")
     private Long tournamentId;
 
+    @NotNull(message = "Court number is required")
+    private Integer courtNumber;
+
     @NotNull(message = "Start date is required")
     @Future(message = "Match start date must be in the future")
     private LocalDateTime startDate;

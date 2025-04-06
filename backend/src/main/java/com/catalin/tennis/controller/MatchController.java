@@ -17,7 +17,7 @@ public class MatchController {
     private final MatchService matchService;
 
     public MatchController(MatchService matchService){
-        this.matchService=matchService;
+        this.matchService = matchService;
     }
 
     @PostMapping

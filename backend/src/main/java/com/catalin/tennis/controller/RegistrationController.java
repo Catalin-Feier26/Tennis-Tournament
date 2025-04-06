@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/registrations")
@@ -43,4 +44,13 @@ public class RegistrationController {
         List<RegistrationResponseDTO> regs = registrationService.getRegistrationsByTournament(tournamentId);
         return ResponseEntity.ok(regs);
     }
+    @GetMapping("/tournament/{tournamentId}/players")
+    public ResponseEntity<List<String>> getRegisteredPlayers(@PathVariable Long tournamentId) {
+        List<RegistrationResponseDTO> regs = registrationService.getRegistrationsByTournament(tournamentId);
+        List<String> usernames = regs.stream()
+                .map(RegistrationResponseDTO::getPlayerName)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(usernames);
+    }
+
 }
