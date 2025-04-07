@@ -1,17 +1,22 @@
+/* 🎾 Referee Dashboard - Tennis Themed */
+
 .referee-container {
     padding: 2rem;
+    background-color: var(--background-color);
+    min-height: 100vh;
 }
 
+/* Match Cards */
 .schedule-container {
     margin-top: 2rem;
 }
 
 .match-card {
-    background: white;
-    border-radius: 8px;
+    background-color: var(--surface-color);
+    border-radius: var(--border-radius);
     padding: 1rem;
     margin-bottom: 1rem;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--box-shadow);
     transition: transform 0.3s ease;
 }
 
@@ -27,12 +32,12 @@
 }
 
 .tournament-name {
-    color: #1e3c72;
+    color: var(--primary-color);
     font-weight: 600;
 }
 
 .match-date {
-    color: #666;
+    color: var(--text-light);
     font-size: 0.875rem;
 }
 
@@ -44,57 +49,61 @@
 
 .players {
     font-size: 1.1rem;
-    color: #333;
+    color: var(--text-color);
 }
 
 .match-info {
     display: flex;
     justify-content: space-between;
-    color: #666;
+    color: var(--text-light);
     font-size: 0.875rem;
 }
 
+/* View All Link */
 .view-all-link {
     display: block;
     text-align: center;
-    color: #1e3c72;
+    color: var(--primary-color);
     text-decoration: none;
     padding: 1rem;
     margin-top: 1rem;
     border-top: 1px solid #eee;
+    font-weight: 500;
 }
 
 .view-all-link:hover {
     text-decoration: underline;
 }
 
-/* Score update form styles */
+/* Score Update Form */
 .score-form {
-    background: white;
-    border-radius: 8px;
+    background-color: var(--surface-color);
+    border-radius: var(--border-radius);
     padding: 2rem;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--box-shadow);
     max-width: 600px;
     margin: 0 auto;
+    animation: fadeIn 0.4s ease-out;
 }
 
 .score-form h2 {
-    color: #1e3c72;
+    color: var(--primary-color);
     margin-bottom: 1.5rem;
 }
 
 .match-info-header {
     background: #f8f9fa;
     padding: 1rem;
-    border-radius: 4px;
+    border-radius: var(--border-radius);
     margin-bottom: 1.5rem;
 }
 
 .match-info-header p {
     margin: 0.5rem 0;
-    color: #333;
+    color: var(--text-color);
 }
 
+/* Score Inputs */
 .score-inputs {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -109,7 +118,8 @@
 }
 
 .player-score h3 {
-    color: #1e3c72;
+    color: var(--primary-color);
+    font-size: 1.1rem;
     margin-bottom: 0.5rem;
 }
 
@@ -123,28 +133,32 @@
     padding: 0.5rem;
     text-align: center;
     border: 1px solid #ddd;
-    border-radius: 4px;
+    border-radius: var(--border-radius);
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
 }
 
 .set-input:focus {
+    border-color: var(--primary-color);
     outline: none;
-    border-color: #1e3c72;
 }
 
+/* Submit Button */
 .submit-score {
     width: 100%;
     padding: 1rem;
-    background: #1e3c72;
+    background-color: var(--primary-color);
     color: white;
     border: none;
-    border-radius: 4px;
+    border-radius: var(--border-radius);
     font-size: 1rem;
+    font-weight: 600;
     cursor: pointer;
-    transition: background-color 0.3s;
+    transition: background-color 0.3s ease;
 }
 
 .submit-score:hover:not(:disabled) {
-    background: #2a5298;
+    background-color: var(--primary-dark);
 }
 
 .submit-score:disabled {
@@ -152,7 +166,7 @@
     cursor: not-allowed;
 }
 
-/* Schedule styles */
+/* Filters */
 .schedule-filters {
     display: flex;
     gap: 1rem;
@@ -167,17 +181,30 @@
 
 .filter-group label {
     font-weight: 500;
-    color: #333;
+    color: var(--text-color);
 }
 
 .filter-select {
     padding: 0.5rem;
     border: 1px solid #ddd;
-    border-radius: 4px;
+    border-radius: var(--border-radius);
     min-width: 150px;
+    font-size: 1rem;
 }
 
-/* Responsive adjustments */
+/* Fade-in animation */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive Adjustments */
 @media (max-width: 768px) {
     .score-inputs {
         grid-template-columns: 1fr;
@@ -196,4 +223,10 @@
         flex-direction: column;
         gap: 0.25rem;
     }
-} 
+}
+.score-input {
+    width: 50px;
+    padding: 0.3rem;
+    text-align: center;
+    margin: 0 0.2rem;
+}

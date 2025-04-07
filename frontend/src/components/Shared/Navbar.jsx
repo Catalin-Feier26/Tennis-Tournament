@@ -35,8 +35,10 @@ const Navbar = () => {
                     { to: '/player/dashboard', text: 'Dashboard' },
                     { to: '/player/tournaments', text: 'Tournaments' },
                     { to: '/player/schedule', text: 'My Schedule' },
-                    { to: '/player/scores', text: 'My Scores' }
+                    { to: '/player/scores', text: 'My Scores' },
+                    { to: '/player/view-matches', text: 'See Matches' }
                 ];
+
             default:
                 return [];
         }

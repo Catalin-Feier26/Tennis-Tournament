@@ -12,71 +12,61 @@ const RefereeSchedule = () => {
         status: 'all',
         tournament: 'all'
     });
+
     const { token, username } = getCurrentUser();
 
     useEffect(() => {
-        fetchMatches();
-    }, []);
+        const fetchMatches = async () => {
+            try {
+                const data = await getRefereeMatches(username, token);
+                const sorted = data.sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
+                setMatches(sorted);
+            } catch (err) {
+                setError('Failed to load matches. Please try again later.');
+            } finally {
+                setLoading(false);
+            }
+        };
 
-    const fetchMatches = async () => {
-        try {
-            const data = await getRefereeMatches(username, token);
-            // Sort matches by date
-            const sortedMatches = data.sort((a, b) => 
-                new Date(a.matchDate) - new Date(b.matchDate)
-            );
-            setMatches(sortedMatches);
-        } catch (error) {
-            setError('Failed to load matches. Please try again later.');
-        } finally {
-            setLoading(false);
+        if (username && token) {
+            fetchMatches();
         }
-    };
+    }, [username, token]);
 
     const getMatchStatus = (match) => {
-        const matchDate = new Date(match.matchDate);
+        const matchDate = new Date(match.startDate);
         const now = new Date();
 
-        if (matchDate > now) {
-            return 'upcoming';
-        } else if (match.winner) {
-            return 'completed';
-        } else {
-            return 'in-progress';
-        }
+        if (matchDate > now) return 'upcoming';
+        if (match.scorePlayer1 != null && match.scorePlayer2 != null) return 'completed';
+        return 'in-progress';
     };
 
     const filterMatches = () => {
         return matches.filter(match => {
-            if (filters.status !== 'all' && getMatchStatus(match) !== filters.status) {
-                return false;
-            }
-            if (filters.tournament !== 'all' && match.tournament.name !== filters.tournament) {
-                return false;
-            }
-            return true;
+            const statusMatch = filters.status === 'all' || getMatchStatus(match) === filters.status;
+            const tournamentMatch = filters.tournament === 'all' || match.tournamentName === filters.tournament;
+            return statusMatch && tournamentMatch;
         });
     };
 
     const getTournaments = () => {
-        const tournaments = new Set(matches.map(match => match.tournament.name));
-        return Array.from(tournaments);
+        const names = matches.map(m => m.tournamentName).filter(Boolean);
+        return Array.from(new Set(names));
     };
 
     const renderMatchStatus = (match) => {
         const status = getMatchStatus(match);
         return <span className={`status ${status}`}>
             {status === 'upcoming' ? 'Upcoming' :
-             status === 'completed' ? 'Completed' : 'In Progress'}
+                status === 'completed' ? 'Completed' : 'In Progress'}
         </span>;
     };
 
-    if (loading) {
-        return <div className="loading-container">Loading schedule...</div>;
-    }
-
     const filteredMatches = filterMatches();
-    const tournaments = getTournaments();
+    const tournamentOptions = getTournaments();
+
+    if (loading) return <div className="loading-container">Loading schedule...</div>;
 
     return (
         <div className="dashboard-container">
@@ -111,10 +101,8 @@ const RefereeSchedule = () => {
                         onChange={(e) => setFilters(prev => ({ ...prev, tournament: e.target.value }))}
                     >
                         <option value="all">All Tournaments</option>
-                        {tournaments.map(tournament => (
-                            <option key={tournament} value={tournament}>
-                                {tournament}
-                            </option>
+                        {tournamentOptions.map(tournament => (
+                            <option key={tournament} value={tournament}>{tournament}</option>
                         ))}
                     </select>
                 </div>
@@ -126,43 +114,37 @@ const RefereeSchedule = () => {
                 <div className="table-container">
                     <table className="data-table">
                         <thead>
-                            <tr>
-                                <th>Tournament</th>
-                                <th>Players</th>
-                                <th>Date</th>
-                                <th>Time</th>
-                                <th>Court</th>
-                                <th>Status</th>
-                                <th>Action</th>
-                            </tr>
+                        <tr>
+                            <th>Tournament</th>
+                            <th>Players</th>
+                            <th>Date</th>
+                            <th>Time</th>
+                            <th>Court</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
                         </thead>
                         <tbody>
-                            {filteredMatches.map((match) => (
-                                <tr key={match.id}>
-                                    <td>{match.tournament.name}</td>
-                                    <td>
-                                        {match.player1.username} vs {match.player2.username}
-                                    </td>
-                                    <td>
-                                        {new Date(match.matchDate).toLocaleDateString()}
-                                    </td>
-                                    <td>
-                                        {new Date(match.matchDate).toLocaleTimeString()}
-                                    </td>
-                                    <td>{match.court}</td>
-                                    <td>{renderMatchStatus(match)}</td>
-                                    <td>
-                                        {!match.winner && (
-                                            <Link 
-                                                to={`/referee/matches?matchId=${match.id}`}
-                                                className="button button-primary"
-                                            >
-                                                Update Score
-                                            </Link>
-                                        )}
-                                    </td>
-                                </tr>
-                            ))}
+                        {filteredMatches.map(match => (
+                            <tr key={match.matchId}>
+                                <td>{match.tournamentName}</td>
+                                <td>{match.player1Name} vs {match.player2Name}</td>
+                                <td>{new Date(match.startDate).toLocaleDateString()}</td>
+                                <td>{new Date(match.startDate).toLocaleTimeString()}</td>
+                                <td>{match.courtNumber}</td>
+                                <td>{renderMatchStatus(match)}</td>
+                                <td>
+                                    {(match.scorePlayer1 == null || match.scorePlayer2 == null) && (
+                                        <Link
+                                            to={`/referee/matches?matchId=${match.matchId}`}
+                                            className="button button-primary"
+                                        >
+                                            Update Score
+                                        </Link>
+                                    )}
+                                </td>
+                            </tr>
+                        ))}
                         </tbody>
                     </table>
                 </div>
@@ -171,4 +153,4 @@ const RefereeSchedule = () => {
     );
 };
 
-export default RefereeSchedule; 
+export default RefereeSchedule;

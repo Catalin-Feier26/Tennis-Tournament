@@ -6,82 +6,104 @@ const PlayerScores = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
+    const token = sessionStorage.getItem('token');
+    const username = sessionStorage.getItem('username');
+
     useEffect(() => {
-        fetchMatches();
-    }, []);
+        const fetchMatches = async () => {
+            try {
+                const response = await fetch(`http://localhost:9090/api/matches/player/${username}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
 
-    const fetchMatches = async () => {
-        try {
-            const response = await fetch('http://localhost:9090/api/matches/player', {
-                headers: {
-                    'Authorization': `Bearer ${sessionStorage.getItem('token')}`
-                }
-            });
+                if (!response.ok) throw new Error('Failed to fetch matches');
 
-            if (!response.ok) {
-                throw new Error('Failed to fetch matches');
+                const data = await response.json();
+
+                // Sort by date ascending
+                const sorted = data.sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
+                setMatches(sorted);
+            } catch (err) {
+                setError(err.message);
+            } finally {
+                setLoading(false);
             }
+        };
 
-            const data = await response.json();
-            setMatches(data);
-        } catch (err) {
-            setError(err.message);
-        } finally {
-            setLoading(false);
-        }
-    };
+        fetchMatches();
+    }, [token, username]);
 
     if (loading) {
         return <div className="loading">Loading matches...</div>;
     }
 
     return (
-        <div className="player-container">
-            <h2>My Match Scores</h2>
+        <div className="scores-container">
+            <h2 className="schedule-title">My Match Scores</h2>
+
             {error && <div className="error-message">{error}</div>}
 
-            <div className="matches-list">
-                <table>
-                    <thead>
-                    <tr>
-                        <th>Tournament</th>
-                        <th>Opponent</th>
-                        <th>Date</th>
-                        <th>My Score</th>
-                        <th>Opponent Score</th>
-                        <th>Result</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {matches.map(match => (
-                        <tr key={match.id}>
-                            <td>{match.tournamentName}</td>
-                            <td>
-                                {match.player1Id === sessionStorage.getItem('userId')
-                                    ? match.player2Name
-                                    : match.player1Name}
-                            </td>
-                            <td>{new Date(match.matchDate).toLocaleString()}</td>
-                            <td>
-                                {match.player1Id === sessionStorage.getItem('userId')
-                                    ? match.player1Score
-                                    : match.player2Score}
-                            </td>
-                            <td>
-                                {match.player1Id === sessionStorage.getItem('userId')
-                                    ? match.player2Score
-                                    : match.player1Score}
-                            </td>
-                            <td>
-                                {match.winner === sessionStorage.getItem('userId')
-                                    ? 'Won'
-                                    : match.winner ? 'Lost' : 'Not played yet'}
-                            </td>
+            {matches.length === 0 ? (
+                <p className="loading">No matches found.</p>
+            ) : (
+                <div className="table-container">
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>Player 1</th>
+                            <th>Player 2</th>
+                            <th>Referee</th>
+                            <th>Tournament</th>
+                            <th>Date & Time</th>
+                            <th>Score</th>
+                            <th>Result</th>
                         </tr>
-                    ))}
-                    </tbody>
-                </table>
-            </div>
+                        </thead>
+                        <tbody>
+                        {matches.map((match, idx) => {
+                            const isPlayer1 = match.player1Name === username;
+                            const myScore = isPlayer1 ? match.scorePlayer1 : match.scorePlayer2;
+                            const opponentScore = isPlayer1 ? match.scorePlayer2 : match.scorePlayer1;
+
+                            let result = 'Not played yet';
+                            if (myScore != null && opponentScore != null) {
+                                result =
+                                    myScore > opponentScore
+                                        ? 'Won'
+                                        : myScore < opponentScore
+                                            ? 'Lost'
+                                            : 'Draw';
+                            }
+
+                            return (
+                                <tr key={idx}>
+                                    <td>{match.player1Name}</td>
+                                    <td>{match.player2Name}</td>
+                                    <td>{match.refereeName}</td>
+                                    <td>{match.tournamentName}</td>
+                                    <td>{new Date(match.startDate).toLocaleString()}</td>
+                                    <td>
+                                        {myScore != null && opponentScore != null
+                                            ? `${myScore} - ${opponentScore}`
+                                            : 'TBD'}
+                                    </td>
+                                    <td>
+                                            <span className={`status ${
+                                                result === 'Won' ? 'won' :
+                                                    result === 'Lost' ? 'lost' :
+                                                        result === 'Draw' ? 'draw' :
+                                                            'upcoming'
+                                            }`}>
+                                                {result}
+                                            </span>
+                                    </td>
+                                </tr>
+                            );
+                        })}
+                        </tbody>
+                    </table>
+                </div>
+            )}
         </div>
     );
 };

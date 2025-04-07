@@ -1,4 +1,6 @@
-/* Define color variables based on your palette */
+/* 🎾 Tennis Tournament Theme - Home Page */
+
+/* Color Palette */
 :root {
     --primary: #feb248;        /* Sunshine Orange */
     --secondary: #fffc47;      /* Court Yellow */
@@ -6,24 +8,30 @@
     --dark-bg: #2b2b2b;        /* Racket Graphite */
     --light-bg: #faf9f6;       /* Baseline White */
     --cta: #3f88c5;            /* Match Point Blue */
+
+    --text-color: var(--dark-bg);
+    --text-light: #666;
+    --surface-color: #ffffff;
+    --background-color: var(--light-bg);
+    --box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    --border-radius: 8px;
 }
 
 /* Basic resets and typography */
 body {
     margin: 0;
-    font-family: Arial, sans-serif;
-    background-color: var(--light-bg);
-    color: var(--dark-bg);
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background-color: var(--background-color);
+    color: var(--text-color);
 }
 
-/* Overall Home container */
 .home {
     display: flex;
     flex-direction: column;
     min-height: 100vh;
 }
 
-/* Navbar styling */
+/* Navbar */
 .navbar {
     display: flex;
     justify-content: space-between;
@@ -46,7 +54,7 @@ body {
 .nav-button {
     text-decoration: none;
     padding: 8px 16px;
-    border-radius: 4px;
+    border-radius: var(--border-radius);
     background-color: var(--cta);
     color: var(--light-bg);
     font-weight: bold;
@@ -57,7 +65,7 @@ body {
     background-color: var(--accent);
 }
 
-/* Main content styling */
+/* Main content */
 .main-content {
     flex: 1;
     display: flex;
@@ -80,7 +88,7 @@ body {
     max-width: 600px;
 }
 
-/* Tennis image styling */
+/* Tennis image */
 .tennis-image-container {
     margin: 20px auto;
     width: 80%;
@@ -89,11 +97,11 @@ body {
 
 .tennis-image-container img {
     width: 100%;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
 }
 
-/* Call-to-action button styling */
+/* CTA Button */
 .cta-button {
     padding: 12px 24px;
     font-size: 1rem;
@@ -101,11 +109,222 @@ body {
     color: var(--light-bg);
     background-color: var(--cta);
     border: none;
-    border-radius: 4px;
+    border-radius: var(--border-radius);
     cursor: pointer;
     transition: background-color 0.3s ease;
 }
 
 .cta-button:hover {
     background-color: var(--accent);
+}
+
+/* Hero */
+.hero {
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    color: white;
+    padding: 4rem 2rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="none" stroke="white" stroke-width="1" stroke-opacity="0.1"/></svg>');
+    background-size: 50px 50px;
+    opacity: 0.1;
+    z-index: 0;
+}
+
+.hero-content {
+    position: relative;
+    z-index: 1;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.hero-title {
+    font-size: 3rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.hero-subtitle {
+    font-size: 1.5rem;
+    margin-bottom: 2rem;
+    opacity: 0.9;
+}
+
+.hero-button {
+    display: inline-block;
+    padding: 1rem 2rem;
+    background-color: var(--cta);
+    color: white;
+    text-decoration: none;
+    border-radius: var(--border-radius);
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: var(--box-shadow);
+}
+
+.hero-button:hover {
+    transform: translateY(-2px);
+    background-color: var(--accent);
+}
+
+/* Features Section */
+.features {
+    padding: 4rem 2rem;
+    background-color: var(--surface-color);
+}
+
+.features-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.features-title {
+    text-align: center;
+    color: var(--primary);
+    font-size: 2.5rem;
+    margin-bottom: 3rem;
+}
+
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+}
+
+.feature-card {
+    background-color: var(--surface-color);
+    padding: 2rem;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    transition: transform 0.3s ease;
+    text-align: center;
+}
+
+.feature-card:hover {
+    transform: translateY(-5px);
+}
+
+.feature-icon {
+    font-size: 3rem;
+    color: var(--primary);
+    margin-bottom: 1rem;
+}
+
+.feature-title {
+    font-size: 1.5rem;
+    color: var(--text-color);
+    margin-bottom: 1rem;
+}
+
+.feature-description {
+    color: var(--text-light);
+    line-height: 1.6;
+}
+
+/* Stats Section */
+.stats {
+    background-color: var(--background-color);
+    padding: 4rem 2rem;
+}
+
+.stats-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 2rem;
+}
+
+.stat-item {
+    text-align: center;
+    padding: 2rem;
+    background-color: var(--surface-color);
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+}
+
+.stat-number {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 0.5rem;
+}
+
+.stat-label {
+    color: var(--text-light);
+    font-size: 1.1rem;
+}
+
+/* Final Call-to-Action */
+.cta {
+    background: linear-gradient(135deg, var(--secondary), var(--primary));
+    color: var(--dark-bg);
+    padding: 4rem 2rem;
+    text-align: center;
+}
+
+.cta-container {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.cta-title {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+}
+
+.cta-description {
+    font-size: 1.2rem;
+    margin-bottom: 2rem;
+    opacity: 0.9;
+}
+
+.cta-button {
+    display: inline-block;
+    padding: 1rem 2rem;
+    background-color: var(--cta);
+    color: white;
+    text-decoration: none;
+    border-radius: var(--border-radius);
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: var(--box-shadow);
+}
+
+.cta-button:hover {
+    transform: translateY(-2px);
+    background-color: var(--accent);
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .hero,
+    .features,
+    .stats,
+    .cta {
+        padding: 3rem 1rem;
+    }
+
+    .hero-title {
+        font-size: 2.5rem;
+    }
+
+    .hero-subtitle,
+    .cta-description {
+        font-size: 1.1rem;
+    }
+
+    .features-title,
+    .cta-title {
+        font-size: 2rem;
+    }
 }

@@ -83,15 +83,20 @@ public class MatchServiceImpl implements MatchService {
         logger.info("Match created with ID: {}", match.getId());
 
         return new MatchResponseDTO(
-                match.getPlayer1().getName(),
-                match.getPlayer2().getName(),
-                match.getReferee().getName(),
+                match.getId(),
+                match.getPlayer1().getUsername(),
+                match.getPlayer2().getUsername(),
+                match.getReferee().getUsername(),
                 match.getTournament().getName(),
                 match.getScorePlayer1(),
                 match.getScorePlayer2(),
                 match.getCourtNumber(),
                 match.getStartDate()
         );
+    }
+    @Override
+    public void deleteMatchById(Long id) {
+        matchRepository.deleteById(id);
     }
 
     @Override
@@ -108,9 +113,10 @@ public class MatchServiceImpl implements MatchService {
         matchRepository.save(match);
 
         return new MatchResponseDTO(
-                match.getPlayer1().getName(),
-                match.getPlayer2().getName(),
-                match.getReferee().getName(),
+                match.getId(),
+                match.getPlayer1().getUsername(),
+                match.getPlayer2().getUsername(),
+                match.getReferee().getUsername(),
                 match.getTournament().getName(),
                 match.getScorePlayer1(),
                 match.getScorePlayer2(),
@@ -129,8 +135,11 @@ public class MatchServiceImpl implements MatchService {
     }
 
     @Override
-    public List<MatchResponseDTO> getMatchesByReferee(Long refereeId) {
-        List<Match> matches = matchRepository.findByReferee_Id(refereeId);
+    public List<MatchResponseDTO> getMatchesByRefereeUsername(String username) {
+        User referee = userRepository.findByUsername(username).orElseThrow(
+                () -> new UserNotFoundException("Referee not found")
+        );
+        List<Match> matches = matchRepository.findAllByReferee(referee);
         if (matches.isEmpty()) {
             return new ArrayList<>();
         }
@@ -152,9 +161,10 @@ public class MatchServiceImpl implements MatchService {
         List<MatchResponseDTO> matchResponseDTOS = new ArrayList<>();
         for (Match m : matches) {
             matchResponseDTOS.add(new MatchResponseDTO(
-                    m.getPlayer1().getName(),
-                    m.getPlayer2().getName(),
-                    m.getReferee().getName(),
+                    m.getId(),
+                    m.getPlayer1().getUsername(),
+                    m.getPlayer2().getUsername(),
+                    m.getReferee().getUsername(),
                     m.getTournament().getName(),
                     m.getScorePlayer1(),
                     m.getScorePlayer2(),

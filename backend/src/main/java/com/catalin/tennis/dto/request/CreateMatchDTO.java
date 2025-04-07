@@ -12,14 +12,14 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class CreateMatchDTO {
 
-    @NotNull(message = "Player 1 ID is required")
-    private Long player1Id;
+    @NotNull(message = "Player 1 username is required")
+    private String player1Username;
 
-    @NotNull(message = "Player 2 ID is required")
-    private Long player2Id;
+    @NotNull(message = "Player 2 username is required")
+    private String player2Username;
 
-    @NotNull(message = "Referee ID is required")
-    private Long refereeId;
+    @NotNull(message = "Referee username is required")
+    private String refereeUsername;
 
     @NotNull(message = "Tournament ID is required")
     private Long tournamentId;
@@ -30,4 +30,9 @@ public class CreateMatchDTO {
     @NotNull(message = "Start date is required")
     @Future(message = "Match start date must be in the future")
     private LocalDateTime startDate;
+
+    // Transient fields for internal use
+    private transient Long player1Id;
+    private transient Long player2Id;
+    private transient Long refereeId;
 }

@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Setter
 @Getter
@@ -33,6 +35,18 @@ public class User {
 
     @Column(name="created_at",nullable = false, updatable = false)
     private LocalDateTime createdAt;
+
+    @OneToMany(mappedBy = "player", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Registration> registrations = new ArrayList<>();
+
+    @OneToMany(mappedBy = "player1", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Match> matchesAsPlayer1 = new ArrayList<>();
+
+    @OneToMany(mappedBy = "player2", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Match> matchesAsPlayer2 = new ArrayList<>();
+
+    @OneToMany(mappedBy = "referee", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Match> matchesAsReferee = new ArrayList<>();
 
 
     public static UserBuilder builder() {

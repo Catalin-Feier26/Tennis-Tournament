@@ -13,14 +13,10 @@ import { getCurrentUser } from '../../utils/auth';
 import './Admin.css';
 
 const MatchManagement = () => {
-    // State for tournaments and selected tournament
     const [tournaments, setTournaments] = useState([]);
     const [selectedTournament, setSelectedTournament] = useState(null);
-    // Matches for the selected tournament
     const [matches, setMatches] = useState([]);
-    // Registered players (usernames) for the selected tournament
     const [registeredPlayers, setRegisteredPlayers] = useState([]);
-    // Other state variables
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -39,7 +35,6 @@ const MatchManagement = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        // Fetch tournaments and users on component mount
         fetchTournaments();
         fetchUsers();
         setLoading(false);
@@ -48,7 +43,6 @@ const MatchManagement = () => {
     const fetchTournaments = async () => {
         try {
             const data = await getTournaments(token);
-            // Optional: sort tournaments by registration deadline (closest first)
             data.sort((a, b) => new Date(a.registrationDeadline) - new Date(b.registrationDeadline));
             setTournaments(data);
         } catch (err) {
@@ -77,14 +71,12 @@ const MatchManagement = () => {
     const fetchRegisteredPlayers = async (tournamentId) => {
         try {
             const data = await getRegisteredPlayersByTournament(tournamentId, token);
-            // data should be an array of usernames (strings)
             setRegisteredPlayers(data);
         } catch (err) {
             setError('Failed to load registered players.');
         }
     };
 
-    // Called when a tournament row is clicked
     const handleTournamentSelect = (tournament) => {
         setSelectedTournament(tournament);
         fetchMatchesForTournament(tournament.id);
@@ -95,7 +87,7 @@ const MatchManagement = () => {
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
-        setFormData(prev => ({
+        setFormData((prev) => ({
             ...prev,
             [name]: value
         }));
@@ -106,10 +98,29 @@ const MatchManagement = () => {
         setError('');
         setSuccess('');
 
-        // Combine matchDate and matchTime into an ISO string and include tournamentId
+        if (
+            !formData.player1Username ||
+            !formData.player2Username ||
+            !formData.refereeUsername ||
+            !formData.courtNumber ||
+            !formData.matchDate ||
+            !formData.matchTime
+        ) {
+            setError('All fields are required');
+            return;
+        }
+
+        if (formData.player1Username === formData.player2Username) {
+            setError('Players must be different');
+            return;
+        }
+
         const matchData = {
-            ...formData,
-            matchDateTime: `${formData.matchDate}T${formData.matchTime}`,
+            player1Username: formData.player1Username,
+            player2Username: formData.player2Username,
+            refereeUsername: formData.refereeUsername,
+            courtNumber: parseInt(formData.courtNumber),
+            startDate: `${formData.matchDate}T${formData.matchTime}:00`,
             tournamentId: selectedTournament.id
         };
 
@@ -121,11 +132,10 @@ const MatchManagement = () => {
                 await createMatch(matchData, token);
                 setSuccess('Match created successfully');
             }
-            // Refresh matches list for the selected tournament
             fetchMatchesForTournament(selectedTournament.id);
             resetForm();
         } catch (err) {
-            setError(err.response?.data?.message || 'An error occurred');
+            setError(err.message || 'Failed to create/update match');
         }
     };
 
@@ -178,7 +188,6 @@ const MatchManagement = () => {
             {error && <div className="error-container">{error}</div>}
             {success && <div className="success-container">{success}</div>}
 
-            {/* If no tournament is selected, display the tournaments list */}
             {!selectedTournament ? (
                 <div className="dashboard-card">
                     <h3>Select a Tournament</h3>
@@ -193,7 +202,7 @@ const MatchManagement = () => {
                             </tr>
                             </thead>
                             <tbody>
-                            {tournaments.map(tournament => (
+                            {tournaments.map((tournament) => (
                                 <tr key={tournament.id}>
                                     <td>{tournament.name}</td>
                                     <td>{new Date(tournament.startDate).toLocaleDateString()}</td>
@@ -229,23 +238,25 @@ const MatchManagement = () => {
                                 </tr>
                                 </thead>
                                 <tbody>
-                                {matches.map(match => (
-                                    <tr key={match.id}>
-                                        <td>{match.player1Username} vs {match.player2Username}</td>
-                                        <td>{match.refereeUsername}</td>
+                                {matches.map((match) => (
+                                    <tr key={match.matchId}>
+                                        <td>
+                                            {match.player1Name} vs {match.player2Name}
+                                        </td>
+                                        <td>{match.refereeName}</td>
                                         <td>{match.courtNumber}</td>
-                                        <td>{new Date(match.matchDateTime).toLocaleString()}</td>
+                                        <td>{new Date(match.startDate).toLocaleString()}</td>
                                         <td>
                                             <div className="table-actions">
                                                 <button
                                                     className="button button-secondary"
                                                     onClick={() => {
                                                         setSelectedMatch(match);
-                                                        const dt = new Date(match.matchDateTime);
+                                                        const dt = new Date(match.startDate);
                                                         setFormData({
-                                                            player1Username: match.player1Username,
-                                                            player2Username: match.player2Username,
-                                                            refereeUsername: match.refereeUsername,
+                                                            player1Username: match.player1Name,
+                                                            player2Username: match.player2Name,
+                                                            refereeUsername: match.refereeName,
                                                             courtNumber: match.courtNumber,
                                                             matchDate: dt.toISOString().split('T')[0],
                                                             matchTime: dt.toTimeString().slice(0, 5)
@@ -256,7 +267,7 @@ const MatchManagement = () => {
                                                 </button>
                                                 <button
                                                     className="button button-danger"
-                                                    onClick={() => handleDelete(match.id)}
+                                                    onClick={() => handleDelete(match.matchId)}
                                                 >
                                                     Delete
                                                 </button>
@@ -271,112 +282,103 @@ const MatchManagement = () => {
 
                     {/* Match Form */}
                     <div className="dashboard-card">
-                        <h3>{selectedMatch ? 'Edit Match' : 'Create New Match'}</h3>
+                        <h3>Create/Edit Match for {selectedTournament.name}</h3>
                         <form onSubmit={handleSubmit} className="match-form">
-                            <div className="form-group">
-                                <label htmlFor="player1Username">Player 1</label>
-                                <select
-                                    id="player1Username"
-                                    name="player1Username"
-                                    value={formData.player1Username}
-                                    onChange={handleInputChange}
-                                    required
-                                >
-                                    <option value="">Select Player 1</option>
-                                    {registeredPlayers.map(username => (
-                                        <option key={username} value={username}>
-                                            {username}
-                                        </option>
-                                    ))}
-                                </select>
+                            <div className="form-row">
+                                <div className="form-group">
+                                    <label>Player 1</label>
+                                    <select
+                                        name="player1Username"
+                                        value={formData.player1Username}
+                                        onChange={handleInputChange}
+                                        required
+                                    >
+                                        <option value="">Select Player 1</option>
+                                        {registeredPlayers.map((player) => (
+                                            <option key={player} value={player}>
+                                                {player}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div className="form-group">
+                                    <label>Player 2</label>
+                                    <select
+                                        name="player2Username"
+                                        value={formData.player2Username}
+                                        onChange={handleInputChange}
+                                        required
+                                    >
+                                        <option value="">Select Player 2</option>
+                                        {registeredPlayers.map((player) => (
+                                            <option key={player} value={player}>
+                                                {player}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
                             </div>
-
-                            <div className="form-group">
-                                <label htmlFor="player2Username">Player 2</label>
-                                <select
-                                    id="player2Username"
-                                    name="player2Username"
-                                    value={formData.player2Username}
-                                    onChange={handleInputChange}
-                                    required
-                                >
-                                    <option value="">Select Player 2</option>
-                                    {registeredPlayers.map(username => (
-                                        <option key={username} value={username}>
-                                            {username}
-                                        </option>
-                                    ))}
-                                </select>
+                            <div className="form-row">
+                                <div className="form-group">
+                                    <label>Referee</label>
+                                    <select
+                                        name="refereeUsername"
+                                        value={formData.refereeUsername}
+                                        onChange={handleInputChange}
+                                        required
+                                    >
+                                        <option value="">Select Referee</option>
+                                        {users
+                                            .filter((user) => user.role === 'REFEREE')
+                                            .map((user) => (
+                                                <option key={user.username} value={user.username}>
+                                                    {user.username}
+                                                </option>
+                                            ))}
+                                    </select>
+                                </div>
+                                <div className="form-group">
+                                    <label>Court Number</label>
+                                    <input
+                                        type="number"
+                                        name="courtNumber"
+                                        value={formData.courtNumber}
+                                        onChange={handleInputChange}
+                                        min="1"
+                                        required
+                                    />
+                                </div>
                             </div>
-
-                            <div className="form-group">
-                                <label htmlFor="refereeUsername">Referee</label>
-                                <select
-                                    id="refereeUsername"
-                                    name="refereeUsername"
-                                    value={formData.refereeUsername}
-                                    onChange={handleInputChange}
-                                    required
-                                >
-                                    <option value="">Select Referee</option>
-                                    {users.filter(user => user.role === 'REFEREE').map(user => (
-                                        <option key={user.username} value={user.username}>
-                                            {user.username}
-                                        </option>
-                                    ))}
-                                </select>
+                            <div className="form-row">
+                                <div className="form-group">
+                                    <label>Match Date</label>
+                                    <input
+                                        type="date"
+                                        name="matchDate"
+                                        value={formData.matchDate}
+                                        onChange={handleInputChange}
+                                        min={new Date().toISOString().split('T')[0]}
+                                        required
+                                    />
+                                </div>
+                                <div className="form-group">
+                                    <label>Match Time</label>
+                                    <input
+                                        type="time"
+                                        name="matchTime"
+                                        value={formData.matchTime}
+                                        onChange={handleInputChange}
+                                        required
+                                    />
+                                </div>
                             </div>
-
-                            <div className="form-group">
-                                <label htmlFor="courtNumber">Court Number</label>
-                                <input
-                                    type="number"
-                                    id="courtNumber"
-                                    name="courtNumber"
-                                    value={formData.courtNumber}
-                                    onChange={handleInputChange}
-                                    min="1"
-                                    required
-                                />
-                            </div>
-
-                            <div className="form-group">
-                                <label htmlFor="matchDate">Match Date</label>
-                                <input
-                                    type="date"
-                                    id="matchDate"
-                                    name="matchDate"
-                                    value={formData.matchDate}
-                                    onChange={handleInputChange}
-                                    required
-                                />
-                            </div>
-
-                            <div className="form-group">
-                                <label htmlFor="matchTime">Match Time</label>
-                                <input
-                                    type="time"
-                                    id="matchTime"
-                                    name="matchTime"
-                                    value={formData.matchTime}
-                                    onChange={handleInputChange}
-                                    required
-                                />
-                            </div>
-
                             <div className="form-actions">
                                 <button type="submit" className="button button-primary">
                                     {selectedMatch ? 'Update Match' : 'Create Match'}
                                 </button>
-                                {selectedMatch && (
-                                    <button
-                                        type="button"
-                                        className="button button-secondary"
-                                        onClick={resetForm}
-                                    >
-                                        Cancel
-                                    </button>
-                                )}
+                                <button type="button" className="button button-secondary" onClick={resetForm}>
+                                    Reset Form
+                                </button>
                             </div>
                         </form>
                     </div>

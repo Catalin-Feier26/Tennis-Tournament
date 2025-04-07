@@ -22,4 +22,8 @@ public interface UserService {
     Map<String,String> login(LoginDTO loginDTO);
 
     UserResponseDTO createUser(CreateUserDTO createUserDTO);
+
+    UserResponseDTO getUserById(Long id);
+
+    Long getUserIdByUsername(String username);
 }

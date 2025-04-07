@@ -107,12 +107,14 @@ export const getPlayerMatches = async (username, token) => {
     return handleResponse(response);
 };
 
-export const getRefereeMatches = async (token) => {
-    const response = await fetch(`${API_BASE_URL}/matches/referee`, {
+export const getRefereeMatches = async (refereeUsername, token) => {
+    const response = await fetch(`${API_BASE_URL}/matches/referee/username/${refereeUsername}`, {
         headers: { 'Authorization': `Bearer ${token}` }
     });
     return handleResponse(response);
 };
+
+
 
 export const updateMatchScore = async (matchId, scoreData, token) => {
     const response = await fetch(`${API_BASE_URL}/matches/${matchId}/score`, {
@@ -127,15 +129,17 @@ export const updateMatchScore = async (matchId, scoreData, token) => {
 };
 
 export const createMatch = async (matchData, token) => {
-    const response = await fetch(`${API_BASE_URL}/matches`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(matchData)
-    });
-    return handleResponse(response);
+    try {
+        const response = await axios.post(`${API_BASE_URL}/matches`, matchData, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        return response.data;
+    } catch (error) {
+        throw new Error(error.response?.data?.message || 'Failed to create match');
+    }
 };
 
 export const updateMatch = async (matchId, matchData, token) => {
@@ -150,12 +154,22 @@ export const updateMatch = async (matchId, matchData, token) => {
     return handleResponse(response);
 };
 
-export const deleteMatch = async (matchId, token) => {
-    const response = await fetch(`${API_BASE_URL}/matches/${matchId}`, {
+export const deleteMatch = async (id, token) => {
+    const res = await fetch(`${API_BASE_URL}/matches/${id}`, {
         method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` }
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
     });
-    return handleResponse(response);
+
+    if (!res.ok) {
+        const errorMessage = await res.text();
+        const error = new Error(errorMessage || 'Failed to delete match');
+        error.status = res.status;
+        throw error;
+    }
+
+    return await res.text();
 };
 
 // Admin API calls

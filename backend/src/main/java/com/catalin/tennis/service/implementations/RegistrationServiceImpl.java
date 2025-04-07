@@ -85,7 +85,7 @@ public class RegistrationServiceImpl implements RegistrationService {
         List<RegistrationResponseDTO> dtos=new ArrayList<>();
         for(Registration r: registrations){
             dtos.add(new RegistrationResponseDTO(
-                    r.getPlayer().getName(),
+                    r.getPlayer().getUsername(),
                     r.getTournament().getName(),
                     r.getRegistrationDate()
                     )

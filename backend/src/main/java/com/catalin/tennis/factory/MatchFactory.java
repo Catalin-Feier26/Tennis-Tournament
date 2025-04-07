@@ -19,6 +19,8 @@ public class MatchFactory {
                 .player2(player2)
                 .referee(referee)
                 .tournament(tournament)
+                .scorePlayer2(0)
+                .scorePlayer1(0)
                 .courtNumber(courtNumber)
                 .startDate(startDate)
                 .build();

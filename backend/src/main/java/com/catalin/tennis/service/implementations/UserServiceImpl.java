@@ -186,4 +186,18 @@ public class UserServiceImpl implements UserService {
         }
         return userResponseDTOS;
     }
+
+    @Override
+    public UserResponseDTO getUserById(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException("User not found with ID: " + id));
+        return new UserResponseDTO(user.getUsername(), user.getName(), user.getRole());
+    }
+
+    @Override
+    public Long getUserIdByUsername(String username) {
+        return userRepository.findByUsername(username)
+                .map(User::getId)
+                .orElseThrow(() -> new UserNotFoundException("User not found with username: " + username));
+    }
 }

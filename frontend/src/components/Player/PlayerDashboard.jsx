@@ -1,120 +1,74 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import { getPlayerMatches } from '../../services/api';
 import { getCurrentUser } from '../../utils/auth';
 import './Player.css';
 
 const PlayerDashboard = () => {
     const [matches, setMatches] = useState([]);
-    const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
-    const { token, username } = getCurrentUser();
+    const { username, token } = getCurrentUser();
 
     useEffect(() => {
+        const fetchMatches = async () => {
+            try {
+                const data = await getPlayerMatches(username, token);
+                setMatches(data);
+            } catch (err) {
+                setError('Failed to load your matches');
+            }
+        };
+
         fetchMatches();
-    }, []);
-
-    const fetchMatches = async () => {
-        try {
-            const data = await getPlayerMatches(username, token);
-            // Sort matches by date, showing upcoming matches first
-            const sortedMatches = data.sort((a, b) => 
-                new Date(a.matchDate) - new Date(b.matchDate)
-            );
-            setMatches(sortedMatches);
-        } catch (error) {
-            setError('Failed to load matches. Please try again later.');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const renderMatchStatus = (match) => {
-        const matchDate = new Date(match.matchDate);
-        const now = new Date();
-
-        if (matchDate > now) {
-            return <span className="status upcoming">Upcoming</span>;
-        } else if (match.winner) {
-            return <span className="status completed">Completed</span>;
-        } else {
-            return <span className="status in-progress">In Progress</span>;
-        }
-    };
-
-    if (loading) {
-        return <div className="loading-container">Loading dashboard...</div>;
-    }
+    }, [username, token]);
 
     return (
         <div className="dashboard-container">
             <div className="dashboard-header">
-                <h1 className="dashboard-title">Player Dashboard</h1>
-                <div className="dashboard-actions">
-                    <Link to="/player/tournaments" className="button button-primary">
-                        Register for Tournament
-                    </Link>
-                </div>
+                <h1 className="dashboard-title">Welcome, {username}!</h1>
+                <p className="dashboard-subtitle">Here are your upcoming matches.</p>
             </div>
 
             {error && <div className="error-container">{error}</div>}
 
-            <div className="dashboard-grid">
+            {matches.length === 0 ? (
+                <p>You have no upcoming or past matches yet.</p>
+            ) : (
                 <div className="dashboard-card">
-                    <h2>Upcoming Matches</h2>
-                    {matches.length === 0 ? (
-                        <p>No upcoming matches scheduled.</p>
-                    ) : (
-                        <div className="table-container">
-                            <table className="data-table">
-                                <thead>
-                                    <tr>
-                                        <th>Tournament</th>
-                                        <th>Opponent</th>
-                                        <th>Date</th>
-                                        <th>Court</th>
-                                        <th>Status</th>
+                    <h3>Your Matches</h3>
+                    <div className="table-container">
+                        <table className="data-table">
+                            <thead>
+                            <tr>
+                                <th>Opponent</th>
+                                <th>Referee</th>
+                                <th>Tournament</th>
+                                <th>Date & Time</th>
+                                <th>Score</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {matches.map((match, index) => {
+                                const isPlayer1 = match.player1Name === username;
+                                const opponent = isPlayer1 ? match.player2Name : match.player1Name;
+                                const playerScore = isPlayer1 ? match.scorePlayer1 : match.scorePlayer2;
+                                const opponentScore = isPlayer1 ? match.scorePlayer2 : match.scorePlayer1;
+                                return (
+                                    <tr key={index}>
+                                        <td>{opponent}</td>
+                                        <td>{match.refereeName}</td>
+                                        <td>{match.tournamentName}</td>
+                                        <td>{new Date(match.startDate).toLocaleString()}</td>
+                                        <td>{playerScore != null && opponentScore != null ? `${playerScore} - ${opponentScore}` : 'TBD'}</td>
                                     </tr>
-                                </thead>
-                                <tbody>
-                                    {matches.map((match) => (
-                                        <tr key={match.id}>
-                                            <td>{match.tournament.name}</td>
-                                            <td>
-                                                {match.player1.username === username
-                                                    ? match.player2.username
-                                                    : match.player1.username}
-                                            </td>
-                                            <td>
-                                                {new Date(match.matchDate).toLocaleDateString()}
-                                            </td>
-                                            <td>{match.court}</td>
-                                            <td>{renderMatchStatus(match)}</td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    )}
-                </div>
-
-                <div className="dashboard-card">
-                    <h2>Quick Links</h2>
-                    <div className="quick-links">
-                        <Link to="/player/schedule" className="quick-link">
-                            View Full Schedule
-                        </Link>
-                        <Link to="/player/scores" className="quick-link">
-                            View Match History
-                        </Link>
-                        <Link to="/profile" className="quick-link">
-                            Update Profile
-                        </Link>
+                                );
+                            })}
+                            </tbody>
+                        </table>
                     </div>
                 </div>
-            </div>
+            )}
         </div>
     );
 };
 
-export default PlayerDashboard; 
+export default PlayerDashboard;

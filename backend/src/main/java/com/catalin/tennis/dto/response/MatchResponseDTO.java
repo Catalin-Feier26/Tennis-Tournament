@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 @Data
 @AllArgsConstructor
 public class MatchResponseDTO {
+    private Long matchId;
     private String player1Name;
     private String player2Name;
     private String refereeName;

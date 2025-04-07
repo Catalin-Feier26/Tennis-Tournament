@@ -10,6 +10,7 @@ public interface MatchService {
     MatchResponseDTO createMatch(CreateMatchDTO dto);
     MatchResponseDTO updateScore(UpdateScoreDTO dto);
     List<MatchResponseDTO> getMatchesByTournament(Long tournamentId);
-    List<MatchResponseDTO> getMatchesByReferee(Long refereeId);
     List<MatchResponseDTO> getMatchesByPlayer(String username);
+    void deleteMatchById(Long id);
+    public List<MatchResponseDTO> getMatchesByRefereeUsername(String username);
 }

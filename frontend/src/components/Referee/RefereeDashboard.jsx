@@ -11,47 +11,47 @@ const RefereeDashboard = () => {
     const { token, username } = getCurrentUser();
 
     useEffect(() => {
-        fetchMatches();
-    }, []);
+        const fetchMatches = async () => {
+            try {
+                const data = await getRefereeMatches(username, token);
+                const sortedMatches = data.sort(
+                    (a, b) => new Date(a.startDate) - new Date(b.startDate)
+                );
+                setMatches(sortedMatches);
+            } catch (error) {
+                setError('Failed to load matches. Please try again later.');
+            } finally {
+                setLoading(false);
+            }
+        };
 
-    const fetchMatches = async () => {
-        try {
-            const data = await getRefereeMatches(username, token);
-            // Sort matches by date
-            const sortedMatches = data.sort((a, b) => 
-                new Date(a.matchDate) - new Date(b.matchDate)
-            );
-            setMatches(sortedMatches);
-        } catch (error) {
-            setError('Failed to load matches. Please try again later.');
-        } finally {
-            setLoading(false);
+        if (username && token) {
+            fetchMatches();
         }
-    };
+    }, [username, token]);
 
     const renderMatchStatus = (match) => {
-        const matchDate = new Date(match.matchDate);
+        const matchDate = new Date(match.startDate);
         const now = new Date();
 
         if (matchDate > now) {
             return <span className="status upcoming">Upcoming</span>;
-        } else if (match.winner) {
+        } else if (match.scorePlayer1 != null && match.scorePlayer2 != null) {
             return <span className="status completed">Completed</span>;
         } else {
             return <span className="status in-progress">In Progress</span>;
         }
     };
 
-    if (loading) {
-        return <div className="loading-container">Loading dashboard...</div>;
-    }
+    if (loading) return <div className="loading-container">Loading dashboard...</div>;
 
-    const upcomingMatches = matches.filter(match => new Date(match.matchDate) > new Date());
-    const todayMatches = matches.filter(match => {
-        const matchDate = new Date(match.matchDate);
-        const today = new Date();
-        return matchDate.toDateString() === today.toDateString();
-    });
+    const today = new Date().toDateString();
+    const todayMatches = matches.filter(m =>
+        new Date(m.startDate).toDateString() === today
+    );
+    const upcomingMatches = matches.filter(
+        m => new Date(m.startDate) > new Date()
+    );
 
     return (
         <div className="dashboard-container">
@@ -67,6 +67,7 @@ const RefereeDashboard = () => {
             {error && <div className="error-container">{error}</div>}
 
             <div className="dashboard-grid">
+                {/* Today's Matches */}
                 <div className="dashboard-card">
                     <h2>Today's Matches</h2>
                     {todayMatches.length === 0 ? (
@@ -75,68 +76,63 @@ const RefereeDashboard = () => {
                         <div className="table-container">
                             <table className="data-table">
                                 <thead>
-                                    <tr>
-                                        <th>Tournament</th>
-                                        <th>Players</th>
-                                        <th>Time</th>
-                                        <th>Court</th>
-                                        <th>Status</th>
-                                        <th>Action</th>
-                                    </tr>
+                                <tr>
+                                    <th>Tournament</th>
+                                    <th>Players</th>
+                                    <th>Time</th>
+                                    <th>Court</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
                                 </thead>
                                 <tbody>
-                                    {todayMatches.map((match) => (
-                                        <tr key={match.id}>
-                                            <td>{match.tournament.name}</td>
-                                            <td>
-                                                {match.player1.username} vs {match.player2.username}
-                                            </td>
-                                            <td>
-                                                {new Date(match.matchDate).toLocaleTimeString()}
-                                            </td>
-                                            <td>{match.court}</td>
-                                            <td>{renderMatchStatus(match)}</td>
-                                            <td>
-                                                {!match.winner && (
-                                                    <Link 
-                                                        to={`/referee/matches?matchId=${match.id}`}
-                                                        className="button button-primary"
-                                                    >
-                                                        Update Score
-                                                    </Link>
-                                                )}
-                                            </td>
-                                        </tr>
-                                    ))}
+                                {todayMatches.map(match => (
+                                    <tr key={match.matchId}>
+                                        <td>{match.tournamentName}</td>
+                                        <td>{match.player1Name} vs {match.player2Name}</td>
+                                        <td>{new Date(match.startDate).toLocaleTimeString()}</td>
+                                        <td>{match.courtNumber}</td>
+                                        <td>{renderMatchStatus(match)}</td>
+                                        <td>
+                                            {(match.scorePlayer1 == null || match.scorePlayer2 == null) && (
+                                                <Link
+                                                    to={`/referee/matches?matchId=${match.matchId}`}
+                                                    className="button button-primary"
+                                                >
+                                                    Update Score
+                                                </Link>
+                                            )}
+                                        </td>
+                                    </tr>
+                                ))}
                                 </tbody>
                             </table>
                         </div>
                     )}
                 </div>
 
+                {/* Upcoming Matches */}
                 <div className="dashboard-card">
                     <h2>Upcoming Matches</h2>
                     {upcomingMatches.length === 0 ? (
-                        <p>No upcoming matches assigned.</p>
+                        <p>No upcoming matches.</p>
                     ) : (
                         <div className="upcoming-matches">
-                            {upcomingMatches.slice(0, 5).map((match) => (
-                                <div key={match.id} className="match-card">
+                            {upcomingMatches.slice(0, 5).map(match => (
+                                <div key={match.matchId} className="match-card">
                                     <div className="match-header">
-                                        <span className="tournament-name">{match.tournament.name}</span>
+                                        <span className="tournament-name">{match.tournamentName}</span>
                                         <span className="match-date">
-                                            {new Date(match.matchDate).toLocaleDateString()}
+                                            {new Date(match.startDate).toLocaleDateString()}
                                         </span>
                                     </div>
                                     <div className="match-details">
                                         <div className="players">
-                                            {match.player1.username} vs {match.player2.username}
+                                            {match.player1Name} vs {match.player2Name}
                                         </div>
                                         <div className="match-info">
-                                            <span>Court {match.court}</span>
-                                            <span>
-                                                {new Date(match.matchDate).toLocaleTimeString()}
-                                            </span>
+                                            <span>Court {match.courtNumber}</span>
+                                            <span>{new Date(match.startDate).toLocaleTimeString()}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -154,4 +150,4 @@ const RefereeDashboard = () => {
     );
 };
 
-export default RefereeDashboard; 
+export default RefereeDashboard;

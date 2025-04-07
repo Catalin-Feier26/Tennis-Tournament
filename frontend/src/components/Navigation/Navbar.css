@@ -1,83 +1,193 @@
+/* Tennis-Themed Navbar */
+
 .navbar {
-    background-color: #1e3c72;
+    background-color: var(--surface-color);
     padding: 1rem 2rem;
+    box-shadow: var(--box-shadow);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.navbar-container {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    max-width: 1200px;
+    margin: 0 auto;
 }
 
-.navbar-brand a {
-    color: white;
+/* Brand */
+.navbar-brand {
+    display: flex;
+    align-items: center;
     text-decoration: none;
-    font-size: 1.5rem;
-    font-weight: bold;
+    color: var(--primary-color);
+    font-size: 1.65rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    transition: color 0.3s ease;
 }
 
+.navbar-brand:hover {
+    color: var(--primary-dark);
+}
+
+.navbar-logo {
+    height: 42px;
+    margin-right: 0.8rem;
+}
+
+/* Links */
 .navbar-menu {
     display: flex;
     align-items: center;
-    gap: 1.5rem;
+    gap: 2rem;
 }
 
-.nav-link {
-    color: white;
+.navbar-link {
+    color: var(--text-color);
     text-decoration: none;
+    font-weight: 500;
     padding: 0.5rem 1rem;
-    border-radius: 4px;
-    transition: background-color 0.3s;
+    border-radius: var(--border-radius);
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-.nav-link:hover {
-    background-color: rgba(255, 255, 255, 0.1);
+.navbar-link:hover {
+    color: var(--primary-color);
+    background-color: rgba(46, 125, 50, 0.08);
 }
 
-.user-info {
+.navbar-link.active {
+    color: var(--primary-color);
+    background-color: rgba(46, 125, 50, 0.12);
+}
+
+/* Actions */
+.navbar-actions {
     display: flex;
     align-items: center;
     gap: 1rem;
 }
 
-.username {
-    color: white;
-    font-weight: 500;
-}
-
-.logout-button {
-    background-color: transparent;
-    color: white;
-    border: 1px solid white;
-    padding: 0.5rem 1rem;
-    border-radius: 4px;
+.navbar-button {
+    padding: 0.55rem 1.2rem;
+    border: none;
+    border-radius: var(--border-radius);
+    font-weight: 600;
+    font-size: 0.95rem;
     cursor: pointer;
-    transition: all 0.3s;
+    transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
-.logout-button:hover {
-    background-color: white;
-    color: #1e3c72;
+.navbar-button-primary {
+    background-color: var(--primary-color);
+    color: white;
 }
 
+.navbar-button-primary:hover {
+    background-color: var(--primary-dark);
+    transform: translateY(-2px);
+}
+
+.navbar-button-secondary {
+    background-color: var(--secondary-color);
+    color: white;
+}
+
+.navbar-button-secondary:hover {
+    background-color: var(--secondary-dark);
+    transform: translateY(-2px);
+}
+
+/* Mobile Hamburger */
+.navbar-toggle {
+    display: none;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.5rem;
+    z-index: 1100;
+}
+
+.navbar-toggle-icon {
+    width: 24px;
+    height: 2px;
+    background-color: var(--text-color);
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.navbar-toggle-icon::before,
+.navbar-toggle-icon::after {
+    content: '';
+    position: absolute;
+    width: 24px;
+    height: 2px;
+    background-color: var(--text-color);
+    transition: all 0.3s ease;
+}
+
+.navbar-toggle-icon::before {
+    top: -8px;
+}
+
+.navbar-toggle-icon::after {
+    bottom: -8px;
+}
+
+/* Toggle effect (X icon) */
+.navbar-toggle.active .navbar-toggle-icon {
+    background-color: transparent;
+}
+
+.navbar-toggle.active .navbar-toggle-icon::before {
+    transform: rotate(45deg);
+    top: 0;
+}
+
+.navbar-toggle.active .navbar-toggle-icon::after {
+    transform: rotate(-45deg);
+    bottom: 0;
+}
+
+/* Mobile Styles */
 @media (max-width: 768px) {
     .navbar {
-        flex-direction: column;
         padding: 1rem;
     }
 
-    .navbar-menu {
-        margin-top: 1rem;
-        flex-direction: column;
-        width: 100%;
+    .navbar-toggle {
+        display: block;
     }
 
-    .nav-link {
+    .navbar-menu {
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background-color: var(--surface-color);
+        padding: 1rem;
+        flex-direction: column;
+        gap: 1rem;
+        box-shadow: var(--box-shadow);
+        animation: fadeIn 0.3s ease-out;
+    }
+
+    .navbar-menu.active {
+        display: flex;
+    }
+
+    .navbar-actions {
+        flex-direction: column;
+        width: 100%;
+        margin-top: 1rem;
+    }
+
+    .navbar-button {
         width: 100%;
         text-align: center;
     }
-
-    .user-info {
-        flex-direction: column;
-        width: 100%;
-        margin-top: 1rem;
-    }
-} 
+}

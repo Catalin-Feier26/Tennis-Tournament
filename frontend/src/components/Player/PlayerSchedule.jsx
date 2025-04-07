@@ -65,20 +65,39 @@ const PlayerSchedule = () => {
                         </tr>
                         </thead>
                         <tbody>
-                        {matches.map(match => (
-                            <tr key={match.id}>
-                                <td>{match.tournament.name}</td>
-                                <td>
-                                    {match.player1.username === username
-                                        ? match.player2.username
-                                        : match.player1.username}
-                                </td>
-                                <td>{new Date(match.matchDate).toLocaleDateString()}</td>
-                                <td>{new Date(match.matchDate).toLocaleTimeString()}</td>
-                                <td>{match.court}</td>
-                                <td>{match.status}</td>
-                            </tr>
-                        ))}
+                        {matches.map((match, index) => {
+                            const isPlayer1 = match.player1Name === username;
+                            const opponent = isPlayer1 ? match.player2Name : match.player1Name;
+                            const matchDate = new Date(match.startDate);
+                            const now = new Date();
+
+                            const isScored =
+                                match.scorePlayer1 !== null &&
+                                match.scorePlayer2 !== null &&
+                                !(match.scorePlayer1 === 0 && match.scorePlayer2 === 0);
+
+                            const hasStarted = matchDate <= now;
+
+                            let status;
+                            if (isScored && hasStarted) {
+                                status = 'Completed';
+                            } else if (!hasStarted) {
+                                status = 'Upcoming';
+                            } else {
+                                status = 'Pending';
+                            }
+
+                            return (
+                                <tr key={index}>
+                                    <td>{match.tournamentName}</td>
+                                    <td>{opponent}</td>
+                                    <td>{matchDate.toLocaleDateString()}</td>
+                                    <td>{matchDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
+                                    <td>{match.courtNumber}</td>
+                                    <td>{status}</td>
+                                </tr>
+                            );
+                        })}
                         </tbody>
                     </table>
                 </div>

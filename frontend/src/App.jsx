@@ -18,6 +18,8 @@ import PlayerDashboard from './components/Player/PlayerDashboard';
 import TournamentRegistration from './components/Player/TournamentRegistration';
 import PlayerSchedule from './components/Player/PlayerSchedule';
 import PlayerScores from './components/Player/PlayerScores';
+import PlayerTournaments from './components/Player/PlayerTournaments';
+import TournamentMatches from './components/Player/TournamentMatches';
 
 // Referee components
 import RefereeDashboard from './components/Referee/RefereeDashboard';
@@ -97,7 +99,22 @@ const App = () => {
                     </ProtectedRoute>
                 }
             />
-
+            <Route
+                path="/player/view-matches"
+                element={
+                    <ProtectedRoute allowedRoles={[ROLES.TENNIS_PLAYER]}>
+                        <PlayerTournaments />
+                    </ProtectedRoute>
+                }
+            />
+            <Route
+                path="/player/view-matches/:tournamentId"
+                element={
+                    <ProtectedRoute allowedRoles={[ROLES.TENNIS_PLAYER]}>
+                        <TournamentMatches />
+                    </ProtectedRoute>
+                }
+            />
             {/* Referee routes */}
             <Route
                 path="/referee/dashboard"
