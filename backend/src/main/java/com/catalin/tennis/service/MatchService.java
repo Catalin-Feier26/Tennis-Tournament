@@ -12,5 +12,7 @@ public interface MatchService {
     List<MatchResponseDTO> getMatchesByTournament(Long tournamentId);
     List<MatchResponseDTO> getMatchesByPlayer(String username);
     void deleteMatchById(Long id);
-    public List<MatchResponseDTO> getMatchesByRefereeUsername(String username);
+    List<MatchResponseDTO> getMatchesByRefereeUsername(String username);
+    byte[] exportMatchesToCsvByTournament(Long tournamentId);
+
 }

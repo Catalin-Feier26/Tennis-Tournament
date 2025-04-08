@@ -22,6 +22,8 @@ const MatchManagement = () => {
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
     const [selectedMatch, setSelectedMatch] = useState(null);
+
+    // The admin only needs the basic form data (players, referee, court, date, time)
     const [formData, setFormData] = useState({
         player1Username: '',
         player2Username: '',
@@ -38,11 +40,14 @@ const MatchManagement = () => {
         fetchTournaments();
         fetchUsers();
         setLoading(false);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
+    // 1. Load Tournaments
     const fetchTournaments = async () => {
         try {
             const data = await getTournaments(token);
+            // Sort by registration deadline if you wish
             data.sort((a, b) => new Date(a.registrationDeadline) - new Date(b.registrationDeadline));
             setTournaments(data);
         } catch (err) {
@@ -50,6 +55,7 @@ const MatchManagement = () => {
         }
     };
 
+    // 2. Load All Users (to pick referees)
     const fetchUsers = async () => {
         try {
             const data = await getAllUsers(token);
@@ -59,6 +65,7 @@ const MatchManagement = () => {
         }
     };
 
+    // 3. Load Matches for a chosen Tournament
     const fetchMatchesForTournament = async (tournamentId) => {
         try {
             const data = await getMatchesByTournament(tournamentId, token);
@@ -68,6 +75,7 @@ const MatchManagement = () => {
         }
     };
 
+    // 4. Load *registered* players for a chosen Tournament
     const fetchRegisteredPlayers = async (tournamentId) => {
         try {
             const data = await getRegisteredPlayersByTournament(tournamentId, token);
@@ -77,6 +85,7 @@ const MatchManagement = () => {
         }
     };
 
+    // Called when the admin selects a tournament row
     const handleTournamentSelect = (tournament) => {
         setSelectedTournament(tournament);
         fetchMatchesForTournament(tournament.id);
@@ -85,6 +94,7 @@ const MatchManagement = () => {
         setSelectedMatch(null);
     };
 
+    // Basic input change
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setFormData((prev) => ({
@@ -93,11 +103,13 @@ const MatchManagement = () => {
         }));
     };
 
+    // Create or Update a match
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
         setSuccess('');
 
+        // Validate
         if (
             !formData.player1Username ||
             !formData.player2Username ||
@@ -106,12 +118,12 @@ const MatchManagement = () => {
             !formData.matchDate ||
             !formData.matchTime
         ) {
-            setError('All fields are required');
+            setError('All fields are required.');
             return;
         }
 
         if (formData.player1Username === formData.player2Username) {
-            setError('Players must be different');
+            setError('Players must be different.');
             return;
         }
 
@@ -119,19 +131,21 @@ const MatchManagement = () => {
             player1Username: formData.player1Username,
             player2Username: formData.player2Username,
             refereeUsername: formData.refereeUsername,
-            courtNumber: parseInt(formData.courtNumber),
+            courtNumber: parseInt(formData.courtNumber, 10),
             startDate: `${formData.matchDate}T${formData.matchTime}:00`,
             tournamentId: selectedTournament.id
         };
 
         try {
             if (selectedMatch) {
-                await updateMatch(selectedMatch.id, matchData, token);
-                setSuccess('Match updated successfully');
+                // Note that we use selectedMatch.matchId now
+                await updateMatch(selectedMatch.matchId, matchData, token);
+                setSuccess('Match updated successfully.');
             } else {
                 await createMatch(matchData, token);
-                setSuccess('Match created successfully');
+                setSuccess('Match created successfully.');
             }
+            // Refresh
             fetchMatchesForTournament(selectedTournament.id);
             resetForm();
         } catch (err) {
@@ -139,11 +153,12 @@ const MatchManagement = () => {
         }
     };
 
+    // Delete match
     const handleDelete = async (matchId) => {
         if (window.confirm('Are you sure you want to delete this match?')) {
             try {
                 await deleteMatch(matchId, token);
-                setSuccess('Match deleted successfully');
+                setSuccess('Match deleted successfully.');
                 fetchMatchesForTournament(selectedTournament.id);
             } catch (err) {
                 setError('Failed to delete match');
@@ -151,6 +166,7 @@ const MatchManagement = () => {
         }
     };
 
+    // Reset form
     const resetForm = () => {
         setSelectedMatch(null);
         setFormData({
@@ -163,6 +179,7 @@ const MatchManagement = () => {
         });
     };
 
+    // Clear entire selection
     const clearTournamentSelection = () => {
         setSelectedTournament(null);
         setMatches([]);
@@ -179,7 +196,10 @@ const MatchManagement = () => {
             <div className="dashboard-header">
                 <h1 className="dashboard-title">Match Management</h1>
                 {selectedTournament && (
-                    <button className="button button-secondary" onClick={clearTournamentSelection}>
+                    <button
+                        className="button button-secondary"
+                        onClick={clearTournamentSelection}
+                    >
                         Back to Tournaments
                     </button>
                 )}
@@ -188,6 +208,7 @@ const MatchManagement = () => {
             {error && <div className="error-container">{error}</div>}
             {success && <div className="success-container">{success}</div>}
 
+            {/* If no tournament is selected, display the list of tournaments */}
             {!selectedTournament ? (
                 <div className="dashboard-card">
                     <h3>Select a Tournament</h3>
@@ -205,8 +226,12 @@ const MatchManagement = () => {
                             {tournaments.map((tournament) => (
                                 <tr key={tournament.id}>
                                     <td>{tournament.name}</td>
-                                    <td>{new Date(tournament.startDate).toLocaleDateString()}</td>
-                                    <td>{new Date(tournament.endDate).toLocaleDateString()}</td>
+                                    <td>
+                                        {new Date(tournament.startDate).toLocaleDateString()}
+                                    </td>
+                                    <td>
+                                        {new Date(tournament.endDate).toLocaleDateString()}
+                                    </td>
                                     <td>
                                         <button
                                             className="button button-primary"
@@ -223,7 +248,7 @@ const MatchManagement = () => {
                 </div>
             ) : (
                 <>
-                    {/* Display matches for the selected tournament */}
+                    {/* Display matches for the chosen tournament */}
                     <div className="dashboard-card">
                         <h3>Matches for {selectedTournament.name}</h3>
                         <div className="table-container">
@@ -245,7 +270,9 @@ const MatchManagement = () => {
                                         </td>
                                         <td>{match.refereeName}</td>
                                         <td>{match.courtNumber}</td>
-                                        <td>{new Date(match.startDate).toLocaleString()}</td>
+                                        <td>
+                                            {new Date(match.startDate).toLocaleString()}
+                                        </td>
                                         <td>
                                             <div className="table-actions">
                                                 <button
@@ -254,12 +281,19 @@ const MatchManagement = () => {
                                                         setSelectedMatch(match);
                                                         const dt = new Date(match.startDate);
                                                         setFormData({
-                                                            player1Username: match.player1Name,
-                                                            player2Username: match.player2Name,
-                                                            refereeUsername: match.refereeName,
+                                                            player1Username:
+                                                            match.player1Name,
+                                                            player2Username:
+                                                            match.player2Name,
+                                                            refereeUsername:
+                                                            match.refereeName,
                                                             courtNumber: match.courtNumber,
-                                                            matchDate: dt.toISOString().split('T')[0],
-                                                            matchTime: dt.toTimeString().slice(0, 5)
+                                                            matchDate: dt
+                                                                .toISOString()
+                                                                .split('T')[0],
+                                                            matchTime: dt
+                                                                .toTimeString()
+                                                                .slice(0, 5)
                                                         });
                                                     }}
                                                 >
@@ -267,7 +301,9 @@ const MatchManagement = () => {
                                                 </button>
                                                 <button
                                                     className="button button-danger"
-                                                    onClick={() => handleDelete(match.matchId)}
+                                                    onClick={() =>
+                                                        handleDelete(match.matchId)
+                                                    }
                                                 >
                                                     Delete
                                                 </button>
@@ -280,7 +316,7 @@ const MatchManagement = () => {
                         </div>
                     </div>
 
-                    {/* Match Form */}
+                    {/* Match creation/edit form */}
                     <div className="dashboard-card">
                         <h3>Create/Edit Match for {selectedTournament.name}</h3>
                         <form onSubmit={handleSubmit} className="match-form">
@@ -331,7 +367,10 @@ const MatchManagement = () => {
                                         {users
                                             .filter((user) => user.role === 'REFEREE')
                                             .map((user) => (
-                                                <option key={user.username} value={user.username}>
+                                                <option
+                                                    key={user.username}
+                                                    value={user.username}
+                                                >
                                                     {user.username}
                                                 </option>
                                             ))}
@@ -376,7 +415,11 @@ const MatchManagement = () => {
                                 <button type="submit" className="button button-primary">
                                     {selectedMatch ? 'Update Match' : 'Create Match'}
                                 </button>
-                                <button type="button" className="button button-secondary" onClick={resetForm}>
+                                <button
+                                    type="button"
+                                    className="button button-secondary"
+                                    onClick={resetForm}
+                                >
                                     Reset Form
                                 </button>
                             </div>

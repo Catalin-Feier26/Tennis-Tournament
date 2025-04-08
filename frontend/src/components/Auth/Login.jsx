@@ -38,7 +38,6 @@ const Login = () => {
             ...prev,
             [name]: value
         }));
-        // Clear error when user starts typing
         if (errors[name]) {
             setErrors(prev => ({
                 ...prev,
@@ -58,8 +57,7 @@ const Login = () => {
         try {
             const response = await login(formData);
             setUserData(response);
-            
-            // Redirect based on role
+
             switch (response.role) {
                 case 'ADMINISTRATOR':
                     navigate('/admin/dashboard');

@@ -1,7 +1,10 @@
 package com.catalin.tennis.dto.response;
 
+import com.catalin.tennis.model.SetScore;
 import lombok.*;
+
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @AllArgsConstructor
@@ -11,8 +14,7 @@ public class MatchResponseDTO {
     private String player2Name;
     private String refereeName;
     private String tournamentName;
-    private int scorePlayer1;
-    private int scorePlayer2;
     private Integer courtNumber;
     private LocalDateTime startDate;
+    private List<SetScore> sets;
 }

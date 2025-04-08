@@ -60,9 +60,7 @@ const TournamentRegistration = () => {
             });
 
             if (response.ok) {
-                // Read the response JSON so we can show its message if available
                 const data = await response.json();
-                // If the backend returned a message, use it; otherwise, use a default message.
                 const message = data.message ? data.message : 'Successfully registered for the tournament!';
                 setSuccess(message);
                 fetchTournaments();

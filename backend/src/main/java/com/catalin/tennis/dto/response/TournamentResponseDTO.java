@@ -7,10 +7,10 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @NoArgsConstructor
 public class TournamentResponseDTO {
-    private Long id; // Unique identifier for React key
+    private Long id;
     private String name;
     private LocalDate startDate;
     private LocalDate endDate;
     private LocalDate registrationDeadline;
-    private int maxParticipants; // Include if needed for your UI
+    private int maxParticipants;
 }

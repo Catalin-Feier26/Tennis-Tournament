@@ -117,7 +117,8 @@ export const getRefereeMatches = async (refereeUsername, token) => {
 
 
 export const updateMatchScore = async (matchId, scoreData, token) => {
-    const response = await fetch(`${API_BASE_URL}/matches/${matchId}/score`, {
+    // scoreData should be like: { matchId: 1, sets: [{ player1Games: 6, player2Games: 4 }, ...] }
+    const response = await fetch(`${API_BASE_URL}/matches/score`, {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',
@@ -130,6 +131,7 @@ export const updateMatchScore = async (matchId, scoreData, token) => {
 
 export const createMatch = async (matchData, token) => {
     try {
+        // matchData must include sets: [{ player1Games: x, player2Games: y }, ...]
         const response = await axios.post(`${API_BASE_URL}/matches`, matchData, {
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -196,6 +198,22 @@ export const exportMatches = async (token) => {
     });
     return response.blob();
 };
+export const exportMatchesByTournament = async (tournamentId, token) => {
+    const response = await fetch(`${API_BASE_URL}/matches/export/tournament/${tournamentId}`, {
+        method: 'GET',
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    });
+
+    if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || 'Failed to export matches.');
+    }
+
+    return await response.blob(); // returns the CSV as a Blob
+};
+
 export const getRegisteredPlayersByTournament = async (tournamentId, token) => {
     const response = await fetch(`${API_BASE_URL}/registrations/tournament/${tournamentId}/players`, {
         headers: { 'Authorization': `Bearer ${token}` }

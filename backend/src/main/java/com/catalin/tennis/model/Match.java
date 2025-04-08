@@ -2,7 +2,9 @@ package com.catalin.tennis.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Setter
 @Getter
@@ -33,11 +35,10 @@ public class Match {
     @JoinColumn(name = "tournament_id", nullable = false)
     private Tournament tournament;
 
-    @Column(name = "score_player1")
-    private Integer scorePlayer1;
 
-    @Column(name = "score_player2")
-    private Integer scorePlayer2;
+    @ElementCollection
+    @CollectionTable(name = "match_sets", joinColumns = @JoinColumn(name = "match_id"))
+    private List<SetScore> sets;
 
     @Column(name = "court_number", nullable = false)
     private Integer courtNumber;
@@ -54,8 +55,7 @@ public class Match {
         private User player2;
         private User referee;
         private Tournament tournament;
-        private Integer scorePlayer1;
-        private Integer scorePlayer2;
+        private List<SetScore> sets;
         private Integer courtNumber;
         private LocalDateTime startDate;
 
@@ -79,13 +79,8 @@ public class Match {
             return this;
         }
 
-        public MatchBuilder scorePlayer1(Integer scorePlayer1) {
-            this.scorePlayer1 = scorePlayer1;
-            return this;
-        }
-
-        public MatchBuilder scorePlayer2(Integer scorePlayer2) {
-            this.scorePlayer2 = scorePlayer2;
+        public MatchBuilder sets(List<SetScore> sets) {
+            this.sets = sets;
             return this;
         }
 
@@ -105,8 +100,7 @@ public class Match {
             match.setPlayer2(this.player2);
             match.setReferee(this.referee);
             match.setTournament(this.tournament);
-            match.setScorePlayer1(this.scorePlayer1);
-            match.setScorePlayer2(this.scorePlayer2);
+            match.setSets(this.sets);
             match.setCourtNumber(this.courtNumber);
             match.setStartDate(this.startDate);
             return match;

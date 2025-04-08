@@ -6,6 +6,10 @@ import com.catalin.tennis.dto.response.MatchResponseDTO;
 import com.catalin.tennis.service.MatchService;
 import com.catalin.tennis.service.UserService;
 import jakarta.validation.Valid;
+import org.springframework.http.MediaType;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,22 +19,21 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/matches")
 public class MatchController {
+
     private final MatchService matchService;
     private final UserService userService;
 
-    public MatchController(MatchService matchService, UserService userService){
+    public MatchController(MatchService matchService, UserService userService) {
         this.matchService = matchService;
         this.userService = userService;
     }
 
     @PostMapping
-    public ResponseEntity<MatchResponseDTO> createMatch(@Valid @RequestBody CreateMatchDTO dto){
-        // Convert usernames to IDs
+    public ResponseEntity<MatchResponseDTO> createMatch(@Valid @RequestBody CreateMatchDTO dto) {
         Long player1Id = userService.getUserIdByUsername(dto.getPlayer1Username());
         Long player2Id = userService.getUserIdByUsername(dto.getPlayer2Username());
         Long refereeId = userService.getUserIdByUsername(dto.getRefereeUsername());
 
-        // Update DTO with IDs
         dto.setPlayer1Id(player1Id);
         dto.setPlayer2Id(player2Id);
         dto.setRefereeId(refereeId);
@@ -40,10 +43,11 @@ public class MatchController {
     }
 
     @PutMapping("/score")
-    public ResponseEntity<MatchResponseDTO> updateScore(@Valid @RequestBody UpdateScoreDTO dto){
+    public ResponseEntity<MatchResponseDTO> updateScore(@Valid @RequestBody UpdateScoreDTO dto) {
         MatchResponseDTO response = matchService.updateScore(dto);
         return ResponseEntity.ok(response);
     }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteMatch(@PathVariable Long id) {
         try {
@@ -72,4 +76,18 @@ public class MatchController {
         List<MatchResponseDTO> matches = matchService.getMatchesByPlayer(username);
         return ResponseEntity.ok(matches);
     }
+    @GetMapping("/export/tournament/{tournamentId}")
+    public ResponseEntity<Resource> exportMatchesToCsvByTournament(@PathVariable Long tournamentId) {
+        byte[] csvData = matchService.exportMatchesToCsvByTournament(tournamentId);
+        ByteArrayResource resource = new ByteArrayResource(csvData);
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=matches_tournament_" + tournamentId + ".csv")
+                .contentType(MediaType.parseMediaType("text/csv"))
+                .contentLength(csvData.length)
+                .body(resource);
+    }
+
+
+
 }

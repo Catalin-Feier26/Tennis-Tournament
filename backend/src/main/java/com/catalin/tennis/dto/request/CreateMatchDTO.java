@@ -1,10 +1,12 @@
 package com.catalin.tennis.dto.request;
 
+import com.catalin.tennis.model.SetScore;
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Setter
@@ -31,7 +33,8 @@ public class CreateMatchDTO {
     @Future(message = "Match start date must be in the future")
     private LocalDateTime startDate;
 
-    // Transient fields for internal use
+    private List<SetScore> sets;
+
     private transient Long player1Id;
     private transient Long player2Id;
     private transient Long refereeId;

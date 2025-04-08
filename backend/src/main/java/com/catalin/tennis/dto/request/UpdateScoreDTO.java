@@ -1,8 +1,10 @@
 package com.catalin.tennis.dto.request;
 
-import jakarta.validation.constraints.Min;
+import com.catalin.tennis.model.SetScore;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
+
+import java.util.List;
 
 @Getter
 @Setter
@@ -13,9 +15,6 @@ public class UpdateScoreDTO {
     @NotNull(message = "Match ID is required")
     private Long matchId;
 
-    @Min(value = 0, message = "Score must be zero or positive")
-    private int scorePlayer1;
-
-    @Min(value = 0, message = "Score must be zero or positive")
-    private int scorePlayer2;
+    @NotNull(message = "List of sets is required")
+    private List<SetScore> sets;
 }

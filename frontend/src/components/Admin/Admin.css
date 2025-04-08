@@ -393,3 +393,14 @@ body {
         text-align: center;
     }
 }
+.export-button {
+    margin-left: 10px;
+    background-color: #3498db;
+    color: white;
+    padding: 5px 10px;
+    border: none;
+    cursor: pointer;
+}
+.export-button:hover {
+    background-color: #2980b9;
+}

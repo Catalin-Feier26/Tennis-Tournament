@@ -18,7 +18,32 @@ const TournamentManagement = () => {
     useEffect(() => {
         fetchTournaments();
     }, []);
+    const handleExportCsv = async (tournamentId) => {
+        try {
+            const response = await fetch(`http://localhost:9090/api/matches/export/tournament/${tournamentId}`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
 
+            if (!response.ok) {
+                throw new Error('Failed to download CSV');
+            }
+
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `matches_tournament_${tournamentId}.csv`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+        } catch (err) {
+            setError(`Error exporting CSV: ${err.message}`);
+        }
+    };
     const fetchTournaments = async () => {
         try {
             const response = await fetch('http://localhost:9090/api/tournaments', {
@@ -198,6 +223,12 @@ const TournamentManagement = () => {
                                             className="delete-button"
                                         >
                                             Delete
+                                        </button>
+                                        <button
+                                            onClick={() => handleExportCsv(tournament.id)}
+                                            className="export-button"
+                                        >
+                                            Export CSV
                                         </button>
                                     </td>
                                 </tr>

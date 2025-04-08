@@ -5,6 +5,7 @@ import com.catalin.tennis.model.Tournament;
 import com.catalin.tennis.model.User;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 
 public class MatchFactory {
     public static Match createMatch(User player1, User player2, User referee, Tournament tournament, Integer courtNumber, LocalDateTime startDate) {
@@ -19,8 +20,7 @@ public class MatchFactory {
                 .player2(player2)
                 .referee(referee)
                 .tournament(tournament)
-                .scorePlayer2(0)
-                .scorePlayer1(0)
+                .sets(Collections.emptyList())
                 .courtNumber(courtNumber)
                 .startDate(startDate)
                 .build();

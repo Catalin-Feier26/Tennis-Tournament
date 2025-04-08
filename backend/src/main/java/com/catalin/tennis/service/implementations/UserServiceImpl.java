@@ -123,11 +123,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserResponseDTO createUser(CreateUserDTO dto) {
-        // Check if the user already exists
         if (userRepository.existsUserByUsername(dto.getUsername())) {
             throw new UsernameAlreadyExistsException("User with this username already exists");
         }
-        // Encode the password
         String hashedPassword = passwordEncoder.encode(dto.getPassword());
         UserRoles roleEnum;
         try {

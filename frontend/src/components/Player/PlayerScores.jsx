@@ -66,14 +66,28 @@ const PlayerScores = () => {
                             const opponentScore = isPlayer1 ? match.scorePlayer2 : match.scorePlayer1;
 
                             let result = 'Not played yet';
-                            if (myScore != null && opponentScore != null) {
-                                result =
-                                    myScore > opponentScore
-                                        ? 'Won'
-                                        : myScore < opponentScore
-                                            ? 'Lost'
-                                            : 'Draw';
+                            if (match.sets && match.sets.length > 0) {
+                                let mySetsWon = 0;
+                                let opponentSetsWon = 0;
+
+                                match.sets.forEach((set) => {
+                                    const p1 = set.player1Games;
+                                    const p2 = set.player2Games;
+
+                                    if (p1 != null && p2 != null) {
+                                        if (isPlayer1 && p1 > p2) mySetsWon++;
+                                        else if (!isPlayer1 && p2 > p1) mySetsWon++;
+
+                                        if (isPlayer1 && p2 > p1) opponentSetsWon++;
+                                        else if (!isPlayer1 && p1 > p2) opponentSetsWon++;
+                                    }
+                                });
+
+                                if (mySetsWon > opponentSetsWon) result = 'Won';
+                                else if (mySetsWon < opponentSetsWon) result = 'Lost';
+                                else if (mySetsWon === opponentSetsWon && mySetsWon > 0) result = 'Draw';
                             }
+
 
                             return (
                                 <tr key={idx}>
@@ -83,8 +97,8 @@ const PlayerScores = () => {
                                     <td>{match.tournamentName}</td>
                                     <td>{new Date(match.startDate).toLocaleString()}</td>
                                     <td>
-                                        {myScore != null && opponentScore != null
-                                            ? `${myScore} - ${opponentScore}`
+                                        {match.sets && match.sets.length > 0
+                                            ? match.sets.map((s) => `${s.player1Games} - ${s.player2Games}`).join(' | ')
                                             : 'TBD'}
                                     </td>
                                     <td>

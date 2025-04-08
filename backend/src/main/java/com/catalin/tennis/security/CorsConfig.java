@@ -14,11 +14,10 @@ public class CorsConfig {
     @Bean
     public CorsFilter corsFilter() {
         CorsConfiguration config = new CorsConfiguration();
-        // Allow your React app's URL
         config.setAllowedOrigins(Arrays.asList("http://localhost:3000"));
-        // Allow HTTP methods that you need
+
         config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        // Allow necessary headers (including Authorization for JWT)
+
         config.setAllowedHeaders(Arrays.asList("Authorization", "Cache-Control", "Content-Type"));
         config.setAllowCredentials(true);
 

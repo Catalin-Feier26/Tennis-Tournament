@@ -13,12 +13,14 @@ const RefereeDashboard = () => {
     useEffect(() => {
         const fetchMatches = async () => {
             try {
+                // Fetch by referee username using the updated API endpoint (see api.js)
                 const data = await getRefereeMatches(username, token);
+                // Sort matches by startDate
                 const sortedMatches = data.sort(
                     (a, b) => new Date(a.startDate) - new Date(b.startDate)
                 );
                 setMatches(sortedMatches);
-            } catch (error) {
+            } catch (err) {
                 setError('Failed to load matches. Please try again later.');
             } finally {
                 setLoading(false);
@@ -36,15 +38,18 @@ const RefereeDashboard = () => {
 
         if (matchDate > now) {
             return <span className="status upcoming">Upcoming</span>;
-        } else if (match.scorePlayer1 != null && match.scorePlayer2 != null) {
+        } else if (match.sets && match.sets.length > 0) {
             return <span className="status completed">Completed</span>;
         } else {
             return <span className="status in-progress">In Progress</span>;
         }
     };
 
-    if (loading) return <div className="loading-container">Loading dashboard...</div>;
+    if (loading) {
+        return <div className="loading-container">Loading dashboard...</div>;
+    }
 
+    // Filter today's and upcoming matches as before (using startDate)
     const today = new Date().toDateString();
     const todayMatches = matches.filter(m =>
         new Date(m.startDate).toDateString() === today
@@ -94,14 +99,13 @@ const RefereeDashboard = () => {
                                         <td>{match.courtNumber}</td>
                                         <td>{renderMatchStatus(match)}</td>
                                         <td>
-                                            {(match.scorePlayer1 == null || match.scorePlayer2 == null) && (
-                                                <Link
-                                                    to={`/referee/matches?matchId=${match.matchId}`}
-                                                    className="button button-primary"
-                                                >
-                                                    Update Score
-                                                </Link>
-                                            )}
+                                            {/* The update score button is shown regardless of match status so referee may update scores */}
+                                            <Link
+                                                to={`/referee/matches?matchId=${match.matchId}`}
+                                                className="button button-primary"
+                                            >
+                                                Update Score
+                                            </Link>
                                         </td>
                                     </tr>
                                 ))}

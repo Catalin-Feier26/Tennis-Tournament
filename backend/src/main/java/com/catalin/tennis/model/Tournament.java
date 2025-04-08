@@ -36,7 +36,6 @@ public class Tournament {
     @Column(name="registration_deadline")
     private LocalDate registrationDeadline;
 
-    // New field to store the maximum number of participants
     @Column(name = "max_participants", nullable = false)
     private int maxParticipants;
 

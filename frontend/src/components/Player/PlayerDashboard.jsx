@@ -58,7 +58,11 @@ const PlayerDashboard = () => {
                                         <td>{match.refereeName}</td>
                                         <td>{match.tournamentName}</td>
                                         <td>{new Date(match.startDate).toLocaleString()}</td>
-                                        <td>{playerScore != null && opponentScore != null ? `${playerScore} - ${opponentScore}` : 'TBD'}</td>
+                                        <td>
+                                            {match.sets && match.sets.length > 0
+                                                ? match.sets.map((s, i) => `${s.player1Games} - ${s.player2Games}`).join(' | ')
+                                                : 'TBD'}
+                                        </td>
                                     </tr>
                                 );
                             })}

@@ -47,10 +47,11 @@ const TournamentMatches = () => {
                             <td>{match.refereeName}</td>
                             <td>{new Date(match.startDate).toLocaleString()}</td>
                             <td>
-                                {match.scorePlayer1 != null && match.scorePlayer2 != null
-                                    ? `${match.scorePlayer1} - ${match.scorePlayer2}`
+                                {match.sets && match.sets.length > 0
+                                    ? match.sets.map((s) => `${s.player1Games} - ${s.player2Games}`).join(' | ')
                                     : 'TBD'}
                             </td>
+
                         </tr>
                     ))}
                     </tbody>

@@ -1,17 +1,22 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { getRefereeMatches, updateMatchScore } from '../../services/api';
 import { getCurrentUser } from '../../utils/auth';
 import './Referee.css';
 
+const BEST_OF_SETS = 3;
+
 const UpdateScore = () => {
     const { token, username } = getCurrentUser();
+    const navigate = useNavigate();
+
     const [matches, setMatches] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
-    const [editMatchId, setEditMatchId] = useState(null);
-    const [score1, setScore1] = useState('');
-    const [score2, setScore2] = useState('');
     const [success, setSuccess] = useState('');
+
+    const [editMatchId, setEditMatchId] = useState(null);
+    const [sets, setSets] = useState([]);
 
     useEffect(() => {
         const fetchMatches = async () => {
@@ -32,41 +37,107 @@ const UpdateScore = () => {
 
     const handleEditClick = (match) => {
         setEditMatchId(match.matchId);
-        setScore1(match.scorePlayer1);
-        setScore2(match.scorePlayer2);
+        if (match.sets && match.sets.length > 0) {
+            const initSets = match.sets.map(s => ({
+                player1Games: s.player1Games != null ? s.player1Games.toString() : '',
+                player2Games: s.player2Games != null ? s.player2Games.toString() : ''
+            }));
+            while (initSets.length < BEST_OF_SETS) {
+                initSets.push({ player1Games: '', player2Games: '' });
+            }
+            setSets(initSets);
+        } else {
+            setSets(Array.from({ length: BEST_OF_SETS }, () => ({ player1Games: '', player2Games: '' })));
+        }
         setError('');
         setSuccess('');
     };
 
     const handleCancelEdit = () => {
         setEditMatchId(null);
-        setScore1('');
-        setScore2('');
+        setSets([]);
+    };
+
+    const handleSetChange = (setIndex, player, value) => {
+        const numericValue = value === '' ? '' : parseInt(value, 10);
+        if (value === '' || (!isNaN(numericValue) && numericValue >= 0 && numericValue <= 7)) {
+            const updatedSets = sets.map((setObj, idx) =>
+                idx === setIndex ? { ...setObj, [player]: value } : setObj
+            );
+            setSets(updatedSets);
+        }
     };
 
     const handleSaveClick = async (matchId) => {
-        if (score1 < 0 || score2 < 0) {
-            setError('Scores must be zero or positive');
+        setError('');
+        setSuccess('');
+
+        const processedSets = sets
+            .map(s => ({
+                player1Games: s.player1Games !== '' ? parseInt(s.player1Games, 10) : null,
+                player2Games: s.player2Games !== '' ? parseInt(s.player2Games, 10) : null
+            }))
+            .filter(s => s.player1Games !== null && s.player2Games !== null);
+
+        if (processedSets.length === 0) {
+            setError('At least one complete set must be entered');
             return;
         }
 
-        try {
-            await updateMatchScore(matchId, {
-                matchId: matchId,
-                scorePlayer1: parseInt(score1),
-                scorePlayer2: parseInt(score2)
-            }, token);
+        for (let s of processedSets) {
+            if (s.player1Games === s.player2Games) {
+                setError('Scores cannot be equal in a set');
+                return;
+            }
+            if (Math.max(s.player1Games, s.player2Games) < 6) {
+                setError('Winning score must be at least 6');
+                return;
+            }
+            if (Math.max(s.player1Games, s.player2Games) === 6 && Math.min(s.player1Games, s.player2Games) > 4) {
+                setError('Invalid 6-x score');
+                return;
+            }
+            if (
+                Math.max(s.player1Games, s.player2Games) === 7 &&
+                ![5, 6].includes(Math.min(s.player1Games, s.player2Games))
+            ) {
+                setError('Invalid 7-x score');
+                return;
+            }
+        }
 
-            const updated = matches.map(m =>
-                m.matchId === matchId
-                    ? { ...m, scorePlayer1: parseInt(score1), scorePlayer2: parseInt(score2) }
-                    : m
+        const body = {
+            matchId: matchId,
+            sets: processedSets
+        };
+
+        try {
+            await updateMatchScore(matchId, body, token);
+            setSuccess('Match score updated successfully!');
+            const updatedMatches = matches.map((m) =>
+                m.matchId === matchId ? { ...m, sets: processedSets } : m
             );
-            setMatches(updated);
-            setSuccess('Score updated successfully');
+            setMatches(updatedMatches);
             handleCancelEdit();
         } catch (err) {
-            setError(err.message || 'Failed to update score');
+            setError(err.message || 'Failed to update match score');
+        }
+    };
+
+    const renderSetScores = (match) => {
+        if (Array.isArray(match.sets) && match.sets.length > 0) {
+            return match.sets
+                .map((s, i) => {
+                    const p1 = s?.player1Games ?? '-';
+                    const p2 = s?.player2Games ?? '-';
+                    return (
+                        <div key={i}>
+                            <strong>Set {i + 1}:</strong> {p1} - {p2}
+                        </div>
+                    );
+                });
+        } else {
+            return 'No scores yet';
         }
     };
 
@@ -75,7 +146,7 @@ const UpdateScore = () => {
     return (
         <div className="dashboard-container">
             <div className="dashboard-header">
-                <h1 className="dashboard-title">Update Match Scores</h1>
+                <h1 className="dashboard-title">Manage Match Scores</h1>
             </div>
 
             {error && <div className="error-container">{error}</div>}
@@ -97,7 +168,7 @@ const UpdateScore = () => {
                         </tr>
                         </thead>
                         <tbody>
-                        {matches.map((match) => (
+                        {matches.map(match => (
                             <tr key={match.matchId}>
                                 <td>{match.tournamentName}</td>
                                 <td>{match.player1Name} vs {match.player2Name}</td>
@@ -105,25 +176,32 @@ const UpdateScore = () => {
                                 <td>{new Date(match.startDate).toLocaleTimeString()}</td>
                                 <td>
                                     {editMatchId === match.matchId ? (
-                                        <>
-                                            <input
-                                                type="number"
-                                                min="0"
-                                                value={score1}
-                                                onChange={(e) => setScore1(e.target.value)}
-                                                className="score-input"
-                                            />
-                                            {' - '}
-                                            <input
-                                                type="number"
-                                                min="0"
-                                                value={score2}
-                                                onChange={(e) => setScore2(e.target.value)}
-                                                className="score-input"
-                                            />
-                                        </>
+                                        sets.map((s, index) => (
+                                            <div key={index} className="set-inputs">
+                                                <strong>Set {index + 1}:</strong>
+                                                <input
+                                                    type="number"
+                                                    value={s.player1Games}
+                                                    onChange={(e) => handleSetChange(index, 'player1Games', e.target.value)}
+                                                    min="0"
+                                                    max="7"
+                                                    placeholder="P1 Games"
+                                                    required
+                                                />
+                                                <span> - </span>
+                                                <input
+                                                    type="number"
+                                                    value={s.player2Games}
+                                                    onChange={(e) => handleSetChange(index, 'player2Games', e.target.value)}
+                                                    min="0"
+                                                    max="7"
+                                                    placeholder="P2 Games"
+                                                    required
+                                                />
+                                            </div>
+                                        ))
                                     ) : (
-                                        `${match.scorePlayer1} - ${match.scorePlayer2}`
+                                        renderSetScores(match)
                                     )}
                                 </td>
                                 <td>
