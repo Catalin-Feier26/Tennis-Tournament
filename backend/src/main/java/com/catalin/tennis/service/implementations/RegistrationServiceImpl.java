@@ -9,9 +9,11 @@ import com.catalin.tennis.exception.UserNotFoundException;
 import com.catalin.tennis.model.Registration;
 import com.catalin.tennis.model.Tournament;
 import com.catalin.tennis.model.User;
+import com.catalin.tennis.model.enums.RegistrationStatus;
 import com.catalin.tennis.repository.RegistrationRepository;
 import com.catalin.tennis.repository.TournamentRepository;
 import com.catalin.tennis.repository.UserRepository;
+import com.catalin.tennis.service.NotificationService;
 import com.catalin.tennis.service.RegistrationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -25,12 +27,14 @@ public class RegistrationServiceImpl implements RegistrationService {
     private final RegistrationRepository registrationRepository;
     private final TournamentRepository tournamentRepository;
     private final UserRepository userRepository;
+    private final NotificationService notificationService;
 
     @Autowired
-    public RegistrationServiceImpl(RegistrationRepository registrationRepository, TournamentRepository tournamentRepository, UserRepository userRepository){
+    public RegistrationServiceImpl(RegistrationRepository registrationRepository, TournamentRepository tournamentRepository, UserRepository userRepository, NotificationService notificationService){
         this.registrationRepository=registrationRepository;
         this.tournamentRepository=tournamentRepository;
         this.userRepository=userRepository;
+        this.notificationService=notificationService;
     }
     @Override
     public RegistrationResponseDTO registerPlayer(RegistrationRequestDTO dto) {
@@ -47,12 +51,14 @@ public class RegistrationServiceImpl implements RegistrationService {
                 .player(user)
                 .tournament(tournament)
                 .registrationDate(LocalDateTime.now())
+                .status(RegistrationStatus.PENDING)
                 .build();
         registrationRepository.save(registration);
         return new RegistrationResponseDTO(
                 user.getName(),
                 tournament.getName(),
-                registration.getRegistrationDate()
+                registration.getRegistrationDate(),
+                registration.getStatus()
         );
     }
 
@@ -74,7 +80,7 @@ public class RegistrationServiceImpl implements RegistrationService {
         Tournament tournament = tournamentRepository.findById(tournamentId).orElseThrow(
                 () -> new TournamentNotFoundException("Tournament with this id doesn't exist")
         );
-        List<Registration> registrations=registrationRepository.findByTournament(tournament);
+        List<Registration> registrations = registrationRepository.findByTournamentAndStatus(tournament, RegistrationStatus.APPROVED);
         if(registrations.isEmpty()){
             throw new RegistrationNotFoundException("No registrations for this tournament");
         }
@@ -87,10 +93,39 @@ public class RegistrationServiceImpl implements RegistrationService {
             dtos.add(new RegistrationResponseDTO(
                     r.getPlayer().getUsername(),
                     r.getTournament().getName(),
-                    r.getRegistrationDate()
+                    r.getRegistrationDate(),
+                    r.getStatus()
                     )
             );
         }
         return dtos;
     }
+    public void approveRegistration(Long registrationId) {
+        Registration reg = registrationRepository.findById(registrationId)
+                .orElseThrow(() -> new RegistrationNotFoundException("Not found"));
+        reg.setStatus(RegistrationStatus.APPROVED);
+        registrationRepository.save(reg);
+        notificationService.createNotification(reg.getPlayer().getUsername(), "Your registration for " + reg.getTournament().getName() + " has been approved.");
+    }
+
+    public void denyRegistration(Long registrationId) {
+        Registration reg = registrationRepository.findById(registrationId)
+                .orElseThrow(() -> new RegistrationNotFoundException("Not found"));
+        reg.setStatus(RegistrationStatus.DENIED);
+        registrationRepository.save(reg);
+        notificationService.createNotification(reg.getPlayer().getUsername(), "Your registration for " + reg.getTournament().getName() + " was denied.");
+    }
+    @Override
+    public List<RegistrationResponseDTO> getPendingRegistrationsByTournament(Long tournamentId) {
+        Tournament tournament = tournamentRepository.findById(tournamentId)
+                .orElseThrow(() -> new TournamentNotFoundException("Tournament not found"));
+
+        List<Registration> registrations = registrationRepository.findByTournamentAndStatus(tournament, RegistrationStatus.PENDING);
+        if (registrations.isEmpty()) {
+            throw new RegistrationNotFoundException("No pending registrations for this tournament");
+        }
+        return responseDTOListRegistrationList(registrations);
+    }
+
+
 }

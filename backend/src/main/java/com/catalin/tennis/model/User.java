@@ -48,6 +48,9 @@ public class User {
     @OneToMany(mappedBy = "referee", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Match> matchesAsReferee = new ArrayList<>();
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Notification> notifications = new ArrayList<>();
+
 
     public static UserBuilder builder() {
         return new UserBuilder();

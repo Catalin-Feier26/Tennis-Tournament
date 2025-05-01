@@ -1,5 +1,6 @@
 package com.catalin.tennis.model;
 
+import com.catalin.tennis.model.enums.RegistrationStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -29,4 +30,7 @@ public class Registration {
 
     @Column(name="registration_date",nullable = false)
     private LocalDateTime registrationDate;
+
+    @Enumerated(EnumType.STRING)
+    private RegistrationStatus status;
 }

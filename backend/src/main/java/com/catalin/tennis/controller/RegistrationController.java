@@ -52,5 +52,21 @@ public class RegistrationController {
                 .collect(Collectors.toList());
         return ResponseEntity.ok(usernames);
     }
+    @PostMapping("/{id}/approve")
+    public ResponseEntity<String> approveRegistration(@PathVariable Long id) {
+        registrationService.approveRegistration(id);
+        return ResponseEntity.ok("Registration approved");
+    }
+
+    @PostMapping("/{id}/deny")
+    public ResponseEntity<String> denyRegistration(@PathVariable Long id) {
+        registrationService.denyRegistration(id);
+        return ResponseEntity.ok("Registration denied");
+    }
+    @GetMapping("/tournament/{tournamentId}/pending")
+    public ResponseEntity<List<RegistrationResponseDTO>> getPendingRegistrations(@PathVariable Long tournamentId) {
+        List<RegistrationResponseDTO> regs = registrationService.getPendingRegistrationsByTournament(tournamentId);
+        return ResponseEntity.ok(regs);
+    }
 
 }

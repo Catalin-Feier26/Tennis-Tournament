@@ -9,5 +9,8 @@ public interface RegistrationService {
     RegistrationResponseDTO registerPlayer(RegistrationRequestDTO dto);
     List<RegistrationResponseDTO> getRegistrationsByPlayer(Long playerId);
     List<RegistrationResponseDTO> getRegistrationsByTournament(Long tournamentId);
+    void approveRegistration(Long id);
+    void denyRegistration(Long id);
 
+    List<RegistrationResponseDTO> getPendingRegistrationsByTournament(Long tournamentId);
 }
