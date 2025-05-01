@@ -220,3 +220,43 @@ export const getRegisteredPlayersByTournament = async (tournamentId, token) => {
     });
     return handleResponse(response);
 };
+export const getRegistrationsByTournament = async (tournamentId, token) => {
+    const response = await fetch(`${API_BASE_URL}/registrations/tournament/${tournamentId}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+    });
+    return handleResponse(response);
+};
+export const getPendingRegistrationsByTournament = async (tournamentId, token) => {
+    const response = await fetch(`${API_BASE_URL}/registrations/tournament/${tournamentId}/pending`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+    });
+    return handleResponse(response);
+};
+export const approveRegistration = async (registrationId, token) => {
+    const response = await fetch(`${API_BASE_URL}/registrations/${registrationId}/approve`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` }
+    });
+    return handleResponse(response);
+};
+export const denyRegistration = async (registrationId, token) => {
+    const response = await fetch(`${API_BASE_URL}/registrations/${registrationId}/deny`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` }
+    });
+    return handleResponse(response);
+};
+export const getUserNotifications = async (username, token) => {
+    const response = await fetch(`${API_BASE_URL}/notifications/user/${username}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+    });
+    return handleResponse(response);
+};
+export const markNotificationAsRead = async (notificationId, token) => {
+    const response = await fetch(`${API_BASE_URL}/notifications/mark-as-read/${notificationId}`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` }
+    });
+    return handleResponse(response);
+};
+
