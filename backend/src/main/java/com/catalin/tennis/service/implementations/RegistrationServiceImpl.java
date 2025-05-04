@@ -55,6 +55,7 @@ public class RegistrationServiceImpl implements RegistrationService {
                 .build();
         registrationRepository.save(registration);
         return new RegistrationResponseDTO(
+                registration.getId(),
                 user.getName(),
                 tournament.getName(),
                 registration.getRegistrationDate(),
@@ -91,6 +92,7 @@ public class RegistrationServiceImpl implements RegistrationService {
         List<RegistrationResponseDTO> dtos=new ArrayList<>();
         for(Registration r: registrations){
             dtos.add(new RegistrationResponseDTO(
+                    r.getId(),
                     r.getPlayer().getUsername(),
                     r.getTournament().getName(),
                     r.getRegistrationDate(),

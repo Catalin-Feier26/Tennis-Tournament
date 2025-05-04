@@ -1,15 +1,32 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ROLES, clearUserData, getCurrentUser } from '../../utils/auth';
+import { getUserNotifications } from '../../services/api';
 import './Shared.css';
 
 const Navbar = () => {
     const navigate = useNavigate();
-    const [user, setUser] = useState({ role: '', username: '' });
+    const [user, setUser] = useState({ role: '', username: '', token: '' });
+    const [unreadCount, setUnreadCount] = useState(0);
 
     useEffect(() => {
-        setUser(getCurrentUser());
+        const currentUser = getCurrentUser();
+        setUser(currentUser);
+
+        if (currentUser.role === ROLES.TENNIS_PLAYER) {
+            fetchNotifications(currentUser.username, currentUser.token);
+        }
     }, []);
+
+    const fetchNotifications = async (username, token) => {
+        try {
+            const notifications = await getUserNotifications(username, token);
+            const unread = notifications.filter(n => !n.read).length;
+            setUnreadCount(unread);
+        } catch (err) {
+            console.error('Failed to fetch notifications');
+        }
+    };
 
     const handleLogout = () => {
         clearUserData();
@@ -22,13 +39,15 @@ const Navbar = () => {
                 return [
                     { to: '/admin/dashboard', text: 'Dashboard' },
                     { to: '/admin/users', text: 'User Management' },
-                    { to: '/admin/matches', text: 'Match Management' }
+                    { to: '/admin/matches', text: 'Match Management' },
+                    { to: '/admin/tournaments', text: 'Tournament Management' }
                 ];
             case ROLES.REFEREE:
                 return [
                     { to: '/referee/dashboard', text: 'Dashboard' },
                     { to: '/referee/schedule', text: 'My Schedule' },
-                    { to: '/referee/matches', text: 'Update Scores' }
+                    { to: '/referee/matches', text: 'Update Scores' },
+                    { to: '/referee/players', text: 'Manage Players' }
                 ];
             case ROLES.TENNIS_PLAYER:
                 return [
@@ -36,9 +55,9 @@ const Navbar = () => {
                     { to: '/player/tournaments', text: 'Tournaments' },
                     { to: '/player/schedule', text: 'My Schedule' },
                     { to: '/player/scores', text: 'My Scores' },
-                    { to: '/player/view-matches', text: 'See Matches' }
+                    { to: '/player/view-matches', text: 'See Matches' },
+                    { to: '/notifications', text: `Notifications${unreadCount > 0 ? ` (${unreadCount})` : ''}` }
                 ];
-
             default:
                 return [];
         }

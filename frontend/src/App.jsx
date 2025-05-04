@@ -9,6 +9,7 @@ import Home from './components/Home/Home';
 
 // Shared components
 import Navbar from './components/Shared/Navbar';
+import Notifications from './components/Shared/Notifications';
 
 // Profile component
 import EditProfile from './components/Profile/EditProfile';
@@ -25,12 +26,14 @@ import TournamentMatches from './components/Player/TournamentMatches';
 import RefereeDashboard from './components/Referee/RefereeDashboard';
 import RefereeSchedule from './components/Referee/RefereeSchedule';
 import UpdateScore from './components/Referee/UpdateScore';
+import PlayerManagement from './components/Referee/PlayerManagement';
 
 // Admin components
 import AdminDashboard from './components/Admin/AdminDashboard';
 import UserManagement from './components/Admin/UserManagement';
 import MatchManagement from './components/Admin/MatchManagement';
 import TournamentManagement from './components/Admin/TournamentManagement'; // <-- Import TournamentManagement
+import RegistrationManagement from './components/Admin/RegistrationManagement';
 
 // Protected Route component
 const ProtectedRoute = ({ children, allowedRoles }) => {
@@ -140,7 +143,14 @@ const App = () => {
                     </ProtectedRoute>
                 }
             />
-
+            <Route
+                path="/referee/players"
+                element={
+                    <ProtectedRoute allowedRoles={[ROLES.REFEREE]}>
+                        <PlayerManagement />
+                    </ProtectedRoute>
+                }
+            />
             {/* Admin routes */}
             <Route
                 path="/admin/dashboard"
@@ -175,7 +185,22 @@ const App = () => {
                     </ProtectedRoute>
                 }
             />
-
+            <Route
+                path="/admin/registrations"
+                element={
+                    <ProtectedRoute allowedRoles={[ROLES.ADMINISTRATOR]}>
+                        <RegistrationManagement />
+                    </ProtectedRoute>
+                }
+            />
+            <Route
+                path="/notifications"
+                element={
+                    <ProtectedRoute>
+                        <Notifications />
+                    </ProtectedRoute>
+                }
+            />
             {/* Catch all route */}
             <Route path="*" element={<Navigate to="/" />} />
         </Routes>

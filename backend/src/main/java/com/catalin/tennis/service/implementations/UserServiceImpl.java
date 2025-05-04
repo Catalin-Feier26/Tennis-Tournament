@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -158,17 +159,11 @@ public class UserServiceImpl implements UserService {
     @Override
     public List<UserResponseDTO> getUsersByRole(UserRoles role) {
         List<User> userList = userRepository.findAllByRole(role);
-        if(userList.isEmpty()){
-            throw new UserNotFoundException("No users with the role: " + role.toString() + ".");
-        }
-        List<UserResponseDTO> userResponseDTOS=new ArrayList<>();
-        for(User u:userList){
-            userResponseDTOS.add(
-                    new UserResponseDTO(u.getUsername(),u.getName(),u.getRole())
-            );
-        }
-        return userResponseDTOS;
+        return userList.stream()
+                .map(u -> new UserResponseDTO(u.getUsername(), u.getName(), u.getRole()))
+                .toList();
     }
+
 
     @Override
     public List<UserResponseDTO> getUsersByName(String name) {
@@ -198,4 +193,20 @@ public class UserServiceImpl implements UserService {
                 .map(User::getId)
                 .orElseThrow(() -> new UserNotFoundException("User not found with username: " + username));
     }
+    @Override
+    public List<UserResponseDTO> getPlayersByName(String name) {
+        List<User> users = userRepository.findAllByRoleAndNameContainingIgnoreCase(UserRoles.TENNIS_PLAYER, name);
+        return users.stream()
+                .map(u -> new UserResponseDTO(u.getUsername(), u.getName(), u.getRole()))
+                .toList();
+    }
+
+    @Override
+    public List<UserResponseDTO> getPlayersByRegistrationPeriod(LocalDateTime start, LocalDateTime end) {
+        List<User> users = userRepository.findAllByRoleAndCreatedAtBetween(UserRoles.TENNIS_PLAYER, start, end);
+        return users.stream()
+                .map(u -> new UserResponseDTO(u.getUsername(), u.getName(), u.getRole()))
+                .toList();
+    }
+
 }

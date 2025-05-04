@@ -259,4 +259,24 @@ export const markNotificationAsRead = async (notificationId, token) => {
     });
     return handleResponse(response);
 };
+export const getTennisPlayers = async (token) => {
+    const response = await fetch(`${API_BASE_URL}/users/role/TENNIS_PLAYER`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+    });
+    return handleResponse(response);
+};
+
+export const searchPlayersByName = async (name, token) => {
+    const response = await fetch(`${API_BASE_URL}/users/players/search?name=${name}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+    });
+    return handleResponse(response);
+};
+
+export const getPlayersByRegistrationPeriod = async (startDate, endDate, token) => {
+    const response = await fetch(`${API_BASE_URL}/users/players/registered?startDate=${startDate}&endDate=${endDate}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+    });
+    return handleResponse(response);
+};
 

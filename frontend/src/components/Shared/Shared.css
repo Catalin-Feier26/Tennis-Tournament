@@ -336,3 +336,24 @@
         padding: 1rem;
     }
 }
+.nav-link {
+    position: relative;
+}
+
+.nav-link::after {
+    content: attr(data-badge);
+    position: absolute;
+    top: -8px;
+    right: -10px;
+    background-color: red;
+    color: white;
+    font-size: 0.7rem;
+    font-weight: bold;
+    padding: 2px 6px;
+    border-radius: 12px;
+    display: none;
+}
+
+.nav-link[data-badge]:not([data-badge="0"])::after {
+    display: inline-block;
+}

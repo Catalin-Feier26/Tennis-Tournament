@@ -52,9 +52,11 @@ const AdminDashboard = () => {
                     <Link to="/admin/matches" className="button button-primary">
                         Manage Matches
                     </Link>
-                    {/* New button for Tournament Management */}
                     <Link to="/admin/tournaments" className="button button-primary">
                         Manage Tournaments
+                    </Link>
+                    <Link to="/admin/registrations" className="button button-primary">
+                        Manage Registrations
                     </Link>
                 </div>
             </div>

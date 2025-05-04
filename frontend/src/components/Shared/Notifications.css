@@ -1,0 +1,30 @@
+/* Notifications.css */
+.notifications-container {
+    padding: 2rem;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.notifications-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.notifications-table th,
+.notifications-table td {
+    padding: 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+.notifications-table th {
+    background-color: #f5f5f5;
+}
+
+.notifications-table tr.unread {
+    background-color: #fff8e1;
+}
+
+.notifications-table tr:hover {
+    background-color: #f0f0f0;
+}

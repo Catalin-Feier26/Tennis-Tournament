@@ -3,11 +3,13 @@ package com.catalin.tennis.controller;
 import com.catalin.tennis.dto.request.CreateUserDTO;
 import com.catalin.tennis.dto.request.UpdateUserDTO;
 import com.catalin.tennis.dto.response.UserResponseDTO;
+import com.catalin.tennis.model.enums.UserRoles;
 import com.catalin.tennis.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -47,6 +49,22 @@ public class UserController {
     public ResponseEntity<UserResponseDTO> createUser(@Valid @RequestBody CreateUserDTO createUserDTO) {
         UserResponseDTO newUser = userService.createUser(createUserDTO);
         return ResponseEntity.ok(newUser);
+    }
+    @GetMapping("/players/search")
+    public ResponseEntity<List<UserResponseDTO>> searchPlayersByName(@RequestParam String name) {
+        return ResponseEntity.ok(userService.getPlayersByName(name));
+    }
+    @GetMapping("/role/{role}")
+    public ResponseEntity<List<UserResponseDTO>> getUsersByRole(@PathVariable String role) {
+        return ResponseEntity.ok(userService.getUsersByRole(UserRoles.valueOf(role)));
+    }
+
+    @GetMapping("/players/registered")
+    public ResponseEntity<List<UserResponseDTO>> getPlayersByRegistrationPeriod(
+            @RequestParam String startDate, @RequestParam String endDate) {
+        LocalDateTime start = LocalDateTime.parse(startDate);
+        LocalDateTime end = LocalDateTime.parse(endDate);
+        return ResponseEntity.ok(userService.getPlayersByRegistrationPeriod(start, end));
     }
 
 }
