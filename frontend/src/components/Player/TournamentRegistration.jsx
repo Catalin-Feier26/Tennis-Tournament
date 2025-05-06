@@ -23,13 +23,9 @@ const TournamentRegistration = () => {
 
             if (response.ok) {
                 const data = await response.json();
-                const currentDate = new Date().toISOString().split('T')[0];
-                const availableTournaments = data.filter(tournament =>
-                    tournament.registrationDeadline && new Date(tournament.registrationDeadline) >= new Date(currentDate)
-                );
-                // Sort by registrationDeadline (closest first)
-                availableTournaments.sort((a, b) => new Date(a.registrationDeadline) - new Date(b.registrationDeadline));
-                setTournaments(availableTournaments);
+                // Sort all tournaments by registration deadline (closest first)
+                data.sort((a, b) => new Date(a.registrationDeadline) - new Date(b.registrationDeadline));
+                setTournaments(data);
             } else if (response.status === 403) {
                 setError('Access denied. Please log in again.');
                 window.location.href = '/login';
@@ -89,7 +85,7 @@ const TournamentRegistration = () => {
             {success && <div className="success-message">{success}</div>}
 
             {tournaments.length === 0 ? (
-                <p>No tournaments available for registration.</p>
+                <p>No tournaments available.</p>
             ) : (
                 <div className="tournaments-grid">
                     {tournaments.map(tournament => {
